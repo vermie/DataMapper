@@ -1,0 +1,271 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="TheoreticalModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityContainer Name="TheoreticalModelStoreContainer">
+          <EntitySet Name="Order" EntityType="TheoreticalModel.Store.Order" store:Type="Tables" Schema="dbo" />
+          <EntitySet Name="OrderInformation" EntityType="TheoreticalModel.Store.OrderInformation" store:Type="Tables" Schema="dbo" />
+          <EntitySet Name="OrderItem" EntityType="TheoreticalModel.Store.OrderItem" store:Type="Tables" Schema="dbo" />
+          <EntitySet Name="Product" EntityType="TheoreticalModel.Store.Product" store:Type="Tables" Schema="dbo" />
+          <AssociationSet Name="FK_OrderInformation_Order" Association="TheoreticalModel.Store.FK_OrderInformation_Order">
+            <End Role="Order" EntitySet="Order" />
+            <End Role="OrderInformation" EntitySet="OrderInformation" />
+          </AssociationSet>
+          <AssociationSet Name="FK_OrderItem_Order" Association="TheoreticalModel.Store.FK_OrderItem_Order">
+            <End Role="Order" EntitySet="Order" />
+            <End Role="OrderItem" EntitySet="OrderItem" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="Order">
+          <Key>
+            <PropertyRef Name="OrderId" />
+          </Key>
+          <Property Name="OrderId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="AccountId" Type="int" Nullable="false" />
+          <Property Name="Status" Type="int" Nullable="false" />
+          <Property Name="Number" Type="varchar" Nullable="false" MaxLength="100" />
+          <Property Name="OrderDate" Type="datetime" Nullable="false" />
+          <Property Name="TaxRate" Type="money" Nullable="false" />
+          <Property Name="ConcurrencyId" Type="int" Nullable="false" />
+          <Property Name="OptionalNote" Type="varchar" MaxLength="100" />
+          <Property Name="OptionalPrice" Type="money" />
+        </EntityType>
+        <EntityType Name="OrderInformation">
+          <Key>
+            <PropertyRef Name="OrderInformationId" />
+          </Key>
+          <Property Name="OrderInformationId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="OrderId" Type="int" Nullable="false" />
+          <Property Name="TrackingNumber" Type="varchar" MaxLength="100" />
+          <Property Name="TrackAmount" Type="decimal" />
+          <Property Name="TrackDate" Type="datetime" />
+        </EntityType>
+        <EntityType Name="OrderItem">
+          <Key>
+            <PropertyRef Name="OrderItemId" />
+          </Key>
+          <Property Name="OrderItemId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="OrderId" Type="int" Nullable="false" />
+          <Property Name="SalePrice" Type="money" Nullable="false" />
+          <Property Name="Upc" Type="varchar" Nullable="false" MaxLength="100" />
+          <Property Name="HasSerialNumber" Type="bit" Nullable="false" />
+          <Property Name="SerialNumber" Type="varchar" Nullable="false" MaxLength="100" />
+          <Property Name="ConcurrencyId" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Product">
+          <Key>
+            <PropertyRef Name="ProductId" />
+          </Key>
+          <Property Name="ProductId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="VendorName" Type="varchar" Nullable="false" MaxLength="100" />
+          <Property Name="Category" Type="varchar" Nullable="false" MaxLength="100" />
+          <Property Name="Description" Type="varchar" Nullable="false" MaxLength="255" />
+          <Property Name="SalePrice" Type="money" Nullable="false" />
+          <Property Name="IsDiscontinued" Type="bit" Nullable="false" />
+          <Property Name="IsSerialNumberRequired" Type="bit" Nullable="false" />
+          <Property Name="ConcurrencyId" Type="int" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_OrderInformation_Order">
+          <End Role="Order" Type="TheoreticalModel.Store.Order" Multiplicity="1" />
+          <End Role="OrderInformation" Type="TheoreticalModel.Store.OrderInformation" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Order">
+              <PropertyRef Name="OrderId" />
+            </Principal>
+            <Dependent Role="OrderInformation">
+              <PropertyRef Name="OrderId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_OrderItem_Order">
+          <End Role="Order" Type="TheoreticalModel.Store.Order" Multiplicity="1" />
+          <End Role="OrderItem" Type="TheoreticalModel.Store.OrderItem" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Order">
+              <PropertyRef Name="OrderId" />
+            </Principal>
+            <Dependent Role="OrderItem">
+              <PropertyRef Name="OrderId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="TheoreticalModel" Alias="Self" p1:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:p1="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityContainer Name="TheoreticalEntities" p1:LazyLoadingEnabled="true">
+          <EntitySet Name="OrderEntity" EntityType="TheoreticalModel.OrderEntity" />
+          <EntitySet Name="OrderInformationEntity" EntityType="TheoreticalModel.OrderInformationEntity" />
+          <EntitySet Name="OrderItemEntity" EntityType="TheoreticalModel.OrderItemEntity" />
+          <AssociationSet Name="FK_OrderInformation_Order" Association="TheoreticalModel.FK_OrderInformation_Order">
+            <End Role="Order" EntitySet="OrderEntity" />
+            <End Role="OrderInformation" EntitySet="OrderInformationEntity" />
+          </AssociationSet>
+          <AssociationSet Name="FK_OrderItem_Order" Association="TheoreticalModel.FK_OrderItem_Order">
+            <End Role="Order" EntitySet="OrderEntity" />
+            <End Role="OrderItem" EntitySet="OrderItemEntity" />
+          </AssociationSet>
+          <EntitySet Name="Products" EntityType="TheoreticalModel.Product" />
+        </EntityContainer>
+        <EntityType Name="OrderEntity">
+          <Key>
+            <PropertyRef Name="OrderId" />
+          </Key>
+          <Property Name="OrderId" Type="Int32" Nullable="false" p1:StoreGeneratedPattern="Identity" />
+          <Property Name="AccountId" Type="Int32" Nullable="false" />
+          <Property Name="Status" Type="Int32" Nullable="false" />
+          <Property Name="Number" Type="String" Nullable="false" MaxLength="100" Unicode="false" FixedLength="false" />
+          <Property Name="OrderDate" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="TaxRate" Type="Decimal" Nullable="false" Precision="19" Scale="4" />
+          <Property Name="ConcurrencyId" Type="Int32" Nullable="false" />
+          <Property Name="OptionalNote" Type="String" MaxLength="100" Unicode="false" FixedLength="false" />
+          <Property Name="OptionalPrice" Type="Decimal" Precision="19" Scale="4" />
+          <NavigationProperty Name="OrderInformation" Relationship="TheoreticalModel.FK_OrderInformation_Order" FromRole="Order" ToRole="OrderInformation" />
+          <NavigationProperty Name="OrderItem" Relationship="TheoreticalModel.FK_OrderItem_Order" FromRole="Order" ToRole="OrderItem" />
+        </EntityType>
+        <EntityType Name="OrderInformationEntity">
+          <Key>
+            <PropertyRef Name="OrderInformationId" />
+          </Key>
+          <Property Name="OrderInformationId" Type="Int32" Nullable="false" p1:StoreGeneratedPattern="Identity" />
+          <Property Name="OrderId" Type="Int32" Nullable="false" />
+          <Property Name="TrackingNumber" Type="String" MaxLength="100" Unicode="false" FixedLength="false" />
+          <Property Name="TrackAmount" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="TrackDate" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="Order" Relationship="TheoreticalModel.FK_OrderInformation_Order" FromRole="OrderInformation" ToRole="Order" />
+        </EntityType>
+        <EntityType Name="OrderItemEntity">
+          <Key>
+            <PropertyRef Name="OrderItemId" />
+          </Key>
+          <Property Name="OrderItemId" Type="Int32" Nullable="false" p1:StoreGeneratedPattern="Identity" />
+          <Property Name="OrderId" Type="Int32" Nullable="false" />
+          <Property Name="SalePrice" Type="Decimal" Nullable="false" Precision="19" Scale="4" />
+          <Property Name="Upc" Type="String" Nullable="false" MaxLength="100" Unicode="false" FixedLength="false" />
+          <Property Name="HasSerialNumber" Type="Boolean" Nullable="false" />
+          <Property Name="SerialNumber" Type="String" Nullable="false" MaxLength="100" Unicode="false" FixedLength="false" />
+          <Property Name="ConcurrencyId" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Order" Relationship="TheoreticalModel.FK_OrderItem_Order" FromRole="OrderItem" ToRole="Order" />
+        </EntityType>
+        <Association Name="FK_OrderInformation_Order">
+          <End Role="Order" Type="TheoreticalModel.OrderEntity" Multiplicity="1" />
+          <End Role="OrderInformation" Type="TheoreticalModel.OrderInformationEntity" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Order">
+              <PropertyRef Name="OrderId" />
+            </Principal>
+            <Dependent Role="OrderInformation">
+              <PropertyRef Name="OrderId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_OrderItem_Order">
+          <End Role="Order" Type="TheoreticalModel.OrderEntity" Multiplicity="1" />
+          <End Role="OrderItem" Type="TheoreticalModel.OrderItemEntity" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Order">
+              <PropertyRef Name="OrderId" />
+            </Principal>
+            <Dependent Role="OrderItem">
+              <PropertyRef Name="OrderId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="Product">
+          <Key>
+            <PropertyRef Name="ProductId" />
+          </Key>
+          <Property Type="Int32" Name="ProductId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="String" Name="VendorName" Nullable="false" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Category" Nullable="false" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Description" Nullable="false" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Type="Decimal" Name="SalePrice" Nullable="false" Precision="19" Scale="4" />
+          <Property Type="Boolean" Name="IsDiscontinued" Nullable="false" />
+          <Property Type="Boolean" Name="IsSerialNumberRequired" Nullable="false" />
+          <Property Type="Int32" Name="ConcurrencyId" Nullable="false" />
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="TheoreticalModelStoreContainer" CdmEntityContainer="TheoreticalEntities">
+          <EntitySetMapping Name="OrderEntity">
+            <EntityTypeMapping TypeName="TheoreticalModel.OrderEntity">
+              <MappingFragment StoreEntitySet="Order">
+                <ScalarProperty Name="OrderId" ColumnName="OrderId" />
+                <ScalarProperty Name="AccountId" ColumnName="AccountId" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Number" ColumnName="Number" />
+                <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
+                <ScalarProperty Name="TaxRate" ColumnName="TaxRate" />
+                <ScalarProperty Name="ConcurrencyId" ColumnName="ConcurrencyId" />
+                <ScalarProperty Name="OptionalNote" ColumnName="OptionalNote" />
+                <ScalarProperty Name="OptionalPrice" ColumnName="OptionalPrice" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="OrderInformationEntity">
+            <EntityTypeMapping TypeName="TheoreticalModel.OrderInformationEntity">
+              <MappingFragment StoreEntitySet="OrderInformation">
+                <ScalarProperty Name="OrderInformationId" ColumnName="OrderInformationId" />
+                <ScalarProperty Name="OrderId" ColumnName="OrderId" />
+                <ScalarProperty Name="TrackingNumber" ColumnName="TrackingNumber" />
+                <ScalarProperty Name="TrackAmount" ColumnName="TrackAmount" />
+                <ScalarProperty Name="TrackDate" ColumnName="TrackDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="OrderItemEntity">
+            <EntityTypeMapping TypeName="TheoreticalModel.OrderItemEntity">
+              <MappingFragment StoreEntitySet="OrderItem">
+                <ScalarProperty Name="OrderItemId" ColumnName="OrderItemId" />
+                <ScalarProperty Name="OrderId" ColumnName="OrderId" />
+                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
+                <ScalarProperty Name="Upc" ColumnName="Upc" />
+                <ScalarProperty Name="HasSerialNumber" ColumnName="HasSerialNumber" />
+                <ScalarProperty Name="SerialNumber" ColumnName="SerialNumber" />
+                <ScalarProperty Name="ConcurrencyId" ColumnName="ConcurrencyId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Products">
+            <EntityTypeMapping TypeName="TheoreticalModel.Product">
+              <MappingFragment StoreEntitySet="Product">
+                <ScalarProperty Name="ConcurrencyId" ColumnName="ConcurrencyId" />
+                <ScalarProperty Name="IsSerialNumberRequired" ColumnName="IsSerialNumberRequired" />
+                <ScalarProperty Name="IsDiscontinued" ColumnName="IsDiscontinued" />
+                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Category" ColumnName="Category" />
+                <ScalarProperty Name="VendorName" ColumnName="VendorName" />
+                <ScalarProperty Name="ProductId" ColumnName="ProductId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="True" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
