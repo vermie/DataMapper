@@ -1,8 +1,7 @@
 ﻿
 using DataMapper.TypeMapping;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TypeMock;
-using TypeMock.ArrangeActAssert;
+using Moq;
 
 namespace DataMapper.Tests.Unit
 {
@@ -14,12 +13,15 @@ namespace DataMapper.Tests.Unit
         public void TestMethod_Validate_AlreadyFinished()
         {
             //arrange
-            var fakeTypeMapStore = Isolate.Fake.Instance<TypeMapStore>();
-            Isolate.WhenCalled(()=>fakeTypeMapStore.Validate()).CallOriginal();
-            ObjectState.SetField(fakeTypeMapStore, "_finished", true);
+            var fakeTypeMapStore = new Mock<TypeMapStore>() { CallBase = true };
+
+            var typeMapStore = fakeTypeMapStore.Object;
+
+            // TODO: find more isolated way to set _finished to true
+            typeMapStore.Finish();
 
             //act
-            fakeTypeMapStore.Validate();
+            typeMapStore.Validate();
 
 
         }
@@ -29,12 +31,15 @@ namespace DataMapper.Tests.Unit
         public void TestMethod_Finish_AlreadyFinished()
         {
             //arrange
-            var fakeTypeMapStore = Isolate.Fake.Instance<TypeMapStore>();
-            Isolate.WhenCalled(() => fakeTypeMapStore.Finish()).CallOriginal();
-            ObjectState.SetField(fakeTypeMapStore, "_finished", true);
+            var fakeTypeMapStore = new Mock<TypeMapStore>() { CallBase = true };
+
+            var typeMapStore = fakeTypeMapStore.Object;
+
+            // TODO: find more isolated way to set _finished to true
+            typeMapStore.Finish();
 
             //act
-            fakeTypeMapStore.Finish();
+            typeMapStore.Finish();
 
 
         }
@@ -44,13 +49,12 @@ namespace DataMapper.Tests.Unit
         public void TestMethod_Map_AlreadyFinished()
         {
             //arrange
-            var fakeTypeMapStore = Isolate.Fake.Instance<TypeMapStore>();
+            var fakeTypeMapStore = new Mock<TypeMapStore>() { CallBase = true };
 
-            Isolate.WhenCalled(() => fakeTypeMapStore.Map<TestSource, TestTarget>(null,null)).CallOriginal();
-            ObjectState.SetField(fakeTypeMapStore, "_finished", false);
+            var typeMapStore = fakeTypeMapStore.Object;
 
             //act
-            fakeTypeMapStore.Map<TestSource, TestTarget>(null, null);
+            typeMapStore.Map<TestSource, TestTarget>(null, null);
 
 
         }

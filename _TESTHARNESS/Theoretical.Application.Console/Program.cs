@@ -8,7 +8,7 @@ using DataMapper.EntityFramework;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Diagnostics;
-using TypeMock.ArrangeActAssert;
+using Moq;
 using DataMapper.Building;
 using Theoretical.Data;
 
