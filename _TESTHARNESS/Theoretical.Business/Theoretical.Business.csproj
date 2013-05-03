@@ -78,7 +78,7 @@
       <Project>{A8392334-85EE-4ABF-BD77-DCE0CFA08358}</Project>
       <Name>DataMapper</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Theoretical.Data\Theoretical.Data.csproj">
+    <ProjectReference Include="..\Theoretical.Data\Theoretical.Data.csproj">
       <Project>{5aaf31c0-bc2c-4448-aae7-feff0d9f5092}</Project>
       <Name>Theoretical.Data</Name>
     </ProjectReference>

@@ -69,13 +69,13 @@
       <Project>{A8392334-85EE-4ABF-BD77-DCE0CFA08358}</Project>
       <Name>DataMapper</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Theoretical.Data\Theoretical.Data.csproj">
+    <ProjectReference Include="..\Theoretical.Business\Theoretical.Business.csproj">
+      <Project>{fe347801-8b5c-4d72-9665-8950b30d2b87}</Project>
+      <Name>Theoretical.Business</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Theoretical.Data\Theoretical.Data.csproj">
       <Project>{5aaf31c0-bc2c-4448-aae7-feff0d9f5092}</Project>
       <Name>Theoretical.Data</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Theoretical.Business\Theoretical.Business.csproj">
-      <Project>{FE347801-8B5C-4D72-9665-8950B30D2B87}</Project>
-      <Name>Theoretical.Business</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
