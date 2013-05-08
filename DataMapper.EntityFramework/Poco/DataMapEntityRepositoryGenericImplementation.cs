@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data.Entity;
-using DataMapper.Commands;
+using DataMapper.Instructions;
 using DataMapper.Mapping;
 using DataMapper;
 
@@ -150,13 +150,13 @@ namespace DataMapper.EntityFramework.Poco
                 context.SaveChanges();
 
                 //- remap any other changes back to the business object? or simply create a new business object and return that?
-                result.SourceTargetPairList.UpdateSourceToTarget();
+                result.Items.Copy(MappingDirection.SourceToTarget);
 
                 //- save the memento?
                 //this.TrySaveMemento(order);
             }
         }
-        protected CommandResult AddEntityTarget(DbContext context, Object entityTarget)
+        protected MappingInstructionResult AddEntityTarget(DbContext context, Object entityTarget)
         {
             //- do the validation?
             //TODO for this...
@@ -173,11 +173,11 @@ namespace DataMapper.EntityFramework.Poco
             var orderEntity = this.EntityDbSet(context).CreateAndAdd(this._entityToEntityTargetDataMap.SourceType);
 
             //build the command
-            var dataMapCommandBuilder = new CommandBuilder();
+            var dataMapCommandBuilder = new MappingInstructionBuilder();
             var dataMapCommand =
                 dataMapCommandBuilder.Build(
                 this._entityToEntityTargetDataMap,
-                CommandChangeDirection.ApplyChangesFromTargetToSource, orderEntity, entityTarget);
+                MappingDirection.TargetToSource, orderEntity, entityTarget);
 
             //- Apply the changes from the business object to the data object.
             var result = dataMapCommand.ApplyChanges();
@@ -197,10 +197,10 @@ namespace DataMapper.EntityFramework.Poco
                 context.SaveChanges();
 
                 //we still need to read the keys back out from the context item.
-                result.SourceTargetPairList.UpdateSourceToTarget();
+                result.Items.Copy(MappingDirection.SourceToTarget);
             }
         }
-        protected CommandResult UpdateEntityTarget(DbContext context, Object entityTarget)
+        protected MappingInstructionResult UpdateEntityTarget(DbContext context, Object entityTarget)
         {
             //load a fresh object
             var entity = this.TryFindEntityByEntityTarget(context, entityTarget);
@@ -211,14 +211,14 @@ namespace DataMapper.EntityFramework.Poco
                 throw new Exception("Cant do that their update");
             }
 
-            var dataMapCommandBuilder = new CommandBuilder();
+            var dataMapCommandBuilder = new MappingInstructionBuilder();
             var dataMapCommand =
                 dataMapCommandBuilder.Build(this._entityToEntityTargetDataMap,
-                CommandChangeDirection.ApplyChangesFromTargetToSource, entity, entityTarget);
+                MappingDirection.TargetToSource, entity, entityTarget);
 
             var result = dataMapCommand.ApplyChanges();
 
-            result.ItemsDeleted.ForEach(a => context.Set(a.ItemType).Remove(a.Item));
+            result.ItemsDeleted.ForEach(a => context.Set(a.ObjectReceivingChangesType).Remove(a.ObjectReceivingChanges));
 
             return result;
         }
@@ -239,11 +239,11 @@ namespace DataMapper.EntityFramework.Poco
             if (entity == null)
                 return null;
 
-            var dataMapCommandBuilder = new CommandBuilder();
+            var dataMapCommandBuilder = new MappingInstructionBuilder();
             var dataMapCommand =
                 dataMapCommandBuilder.Build(
                 this._entityToEntityTargetDataMap,
-                CommandChangeDirection.ApplyChangesFromSourceToTarget, entity, null); // newBusinessObject);
+                MappingDirection.SourceToTarget, entity, null); // newBusinessObject);
 
             //get the result
             var result = dataMapCommand.ApplyChanges();
@@ -282,7 +282,7 @@ namespace DataMapper.EntityFramework.Poco
                 context.SaveChanges();
             }
         }
-        protected CommandResult DeleteEntityTarget(DbContext context, Object entityTarget)
+        protected MappingInstructionResult DeleteEntityTarget(DbContext context, Object entityTarget)
         {
             //find from data objects...
             var entity = this.TryFindEntityByEntityTarget(context, entityTarget);
@@ -295,15 +295,15 @@ namespace DataMapper.EntityFramework.Poco
                 //return;
             }
 
-            var dataMapCommandBuilder = new CommandBuilder();
+            var dataMapCommandBuilder = new MappingInstructionBuilder();
             var dataMapCommand =
                 dataMapCommandBuilder.Build(
                 this._entityToEntityTargetDataMap,
-                CommandChangeDirection.ApplyChangesFromTargetToSource, entity, null);
+                MappingDirection.TargetToSource, entity, null);
 
             var result = dataMapCommand.ApplyChanges();
 
-            result.ItemsDeleted.ForEach(a => context.Set(a.ItemType).Remove(a.Item));
+            result.ItemsDeleted.ForEach(a => context.Set(a.ObjectReceivingChangesType).Remove(a.ObjectReceivingChanges));
 
             return result;
         }

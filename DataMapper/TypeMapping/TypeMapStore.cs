@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DataMapper.Building;
-using DataMapper.Commands;
+using DataMapper.Instructions;
 using DataMapper.Mapping;
 using DataMapper.TypeMapping;
 
@@ -113,12 +113,12 @@ namespace DataMapper
                 throw new TypeMapException("Unable to perform mapping. You must Finish the store before you can use it.");
             }
 
-            var command = this.TryResolveDataMapCommand<Source, Target>(source, target, CommandChangeDirection.ApplyChangesFromSourceToTarget);
+            var command = this.TryResolveDataMapCommand<Source, Target>(source, target, MappingDirection.SourceToTarget);
 
             if (command == null)
             {
                 //yes, yes. I know this is confusing as HELL. Sorry. I will try to wrap unit tests around this...
-                command = this.TryResolveDataMapCommand<Target, Source>(target, source, CommandChangeDirection.ApplyChangesFromTargetToSource);
+                command = this.TryResolveDataMapCommand<Target, Source>(target, source, MappingDirection.TargetToSource);
             }
 
 
@@ -134,11 +134,11 @@ namespace DataMapper
             return this;
         }
 
-        private Command TryResolveDataMapCommand<Source, Target>(Source source, Target target, CommandChangeDirection changeDirection)
+        private MappingInstruction TryResolveDataMapCommand<Source, Target>(Source source, Target target, MappingDirection changeDirection)
         {
-            Command dataMapCommand = null;
+            MappingInstruction dataMapCommand = null;
 
-            var dataMapCommandBuilder = new CommandBuilder();
+            var dataMapCommandBuilder = new MappingInstructionBuilder();
             var dataMap = this.TryFindDataMap<Source, Target>();
 
             //we found a match

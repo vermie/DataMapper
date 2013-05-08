@@ -22,14 +22,14 @@ namespace Theoretical.Application
             try
             {
                 //this uses straight up mapping
-                //DataMapBlock();
+                DataMapBlock();
 
                 //this shows how you can rename things
                 //DataMapBlockOdd();
 
                 //TypeMapper();
 
-                TestTwo();
+                //TestTwo();
             }
             catch (Exception ex)
             {

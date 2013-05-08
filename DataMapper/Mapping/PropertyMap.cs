@@ -64,14 +64,20 @@ namespace DataMapper.Mapping
                 this.TargetPropertyInfo.PropertyType, this.SourcePropertyInfo.PropertyType);
         }
 
-        public void CopySourceToTarget(Object source, Object target)
+        public void Copy(Object source, Object target, MappingDirection mappingDirection)
         {
-            
+            if (mappingDirection == MappingDirection.SourceToTarget)
+                this.CopySourceToTarget(source, target);
+            else
+                this.CopyTargetToSource(source, target);
+        }
+        private void CopySourceToTarget(Object source, Object target)
+        {         
             var sourceRawValue = this.SourcePropertyInfo.GetValue(source, null);
 
             sourceRawValue = this.TypeConverter.Convert(this.TargetPropertyInfo.PropertyType,this.SourcePropertyInfo.PropertyType, sourceRawValue);
 
-            if (sourceRawValue.GetType().IsArray)
+            if (this.SourcePropertyInfo.PropertyType.IsArray)
             {
                 Array sourceArray = (Array)this.SourcePropertyInfo.GetValue(source);
                 var targetType = this.TargetPropertyInfo.PropertyType.GetElementType();
@@ -84,13 +90,13 @@ namespace DataMapper.Mapping
                 this.TargetPropertyInfo.SetValue(target, sourceRawValue, null);    
             }
         }
-        public void CopyTargetToSource(Object source, Object target)
+        private void CopyTargetToSource(Object source, Object target)
         {
             var targetRawValue = this.TargetPropertyInfo.GetValue(target, null);
 
             targetRawValue = this.TypeConverter.Convert(this.SourcePropertyInfo.PropertyType,this.TargetPropertyInfo.PropertyType, targetRawValue);
 
-            if (targetRawValue.GetType().IsArray)
+            if (this.TargetPropertyInfo.PropertyType.IsArray)
             {
                 Array targetArray = (Array)this.TargetPropertyInfo.GetValue(target);
                 var sourceType = this.SourcePropertyInfo.PropertyType.GetElementType();

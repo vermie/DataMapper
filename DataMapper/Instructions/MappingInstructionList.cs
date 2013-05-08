@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DataMapper.Commands
+namespace DataMapper.Instructions
 {
     [Serializable()]
-    public class CommandResultItemList : List<CommandResultItem>
+    public class MappingInstructionList : List<MappingInstruction>
     {
 
     }

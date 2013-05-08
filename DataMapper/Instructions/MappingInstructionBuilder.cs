@@ -5,12 +5,12 @@ using System.Text;
 using System.Collections;
 using DataMapper.Mapping;
 
-namespace DataMapper.Commands
+namespace DataMapper.Instructions
 {
-    public class CommandBuilder
+    public class MappingInstructionBuilder
     {
 
-        public Command Build(DataMap dataMap, CommandChangeDirection direction, Object source, Object target)
+        public MappingInstruction Build(DataMap dataMap, MappingDirection direction, Object source, Object target)
         {
             this.ValidateTypes(source, target, dataMap);
 
@@ -41,11 +41,11 @@ namespace DataMapper.Commands
             }
         }
 
-        private Command BuildCommand(Command parent, DataMap dataMap, PropertyMap parentCollectionPropertyMap, CommandChangeDirection direction, Object source, Object target)
+        private MappingInstruction BuildCommand(MappingInstruction parent, DataMap dataMap, PropertyMap parentCollectionPropertyMap, MappingDirection direction, Object source, Object target)
         {
             //create a new command. This will figure out based on the direction and the source and target objects
             //whether we are doing an add, update, delete or nothing.
-            Command dataMapCommand = new Command(
+            MappingInstruction dataMapCommand = new MappingInstruction(
                 parent, parentCollectionPropertyMap, dataMap, direction, source, target);
 
             //find all the collection properties.
@@ -72,7 +72,7 @@ namespace DataMapper.Commands
                 foreach (var item in sourceToTargetFullOuterJoin)
                 {
                     //yummy recursion
-                    dataMapCommand.ChildCommands.Add(
+                    dataMapCommand.Children.Add(
                         this.BuildCommand(
                         dataMapCommand, 
                         dataMapForCollection, 

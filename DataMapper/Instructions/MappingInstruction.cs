@@ -6,11 +6,11 @@ using System.Collections;
 using System.Reflection;
 using DataMapper.Mapping;
 
-namespace DataMapper.Commands
+namespace DataMapper.Instructions
 {
 
     [Serializable()]
-    public class Command
+    public class MappingInstruction
     {
 
         public Boolean HasParent
@@ -20,7 +20,7 @@ namespace DataMapper.Commands
                 return this.Parent != null;
             }
         }
-        public Command Parent
+        public MappingInstruction Parent
         {
             get;
             set;
@@ -34,12 +34,12 @@ namespace DataMapper.Commands
         {
             get
             {
-                return this.ChangeDirection == CommandChangeDirection.ApplyChangesFromSourceToTarget ?
+                return this.ChangeDirection == MappingDirection.SourceToTarget ?
                     this.ParentCollectionPropertyMap.TargetPropertyInfo : this.ParentCollectionPropertyMap.SourcePropertyInfo;
             }
         }
 
-        public CommandList ChildCommands
+        public MappingInstructionList Children
         {
             get;
             set;
@@ -49,28 +49,28 @@ namespace DataMapper.Commands
         {
             get
             {
-                return this.ChangeDirection == CommandChangeDirection.ApplyChangesFromSourceToTarget ? Target : Source;
+                return this.ChangeDirection == MappingDirection.SourceToTarget ? Target : Source;
             }
         }
         public Object ObjectDeliveringChanges
         {
             get
             {
-                return this.ChangeDirection == CommandChangeDirection.ApplyChangesFromSourceToTarget ? Source : Target;
+                return this.ChangeDirection == MappingDirection.SourceToTarget ? Source : Target;
             }
         }
         public Type ObjectReceivingChangesType
         {
             get
             {
-                return this.ChangeDirection == CommandChangeDirection.ApplyChangesFromSourceToTarget ? DataMap.TargetType : DataMap.SourceType;
+                return this.ChangeDirection == MappingDirection.SourceToTarget ? DataMap.TargetType : DataMap.SourceType;
             }
         }
         public Type ObjectDeliveringChangesType
         {
             get
             {
-                return this.ChangeDirection == CommandChangeDirection.ApplyChangesFromSourceToTarget ? DataMap.SourceType : DataMap.TargetType;
+                return this.ChangeDirection == MappingDirection.SourceToTarget ? DataMap.SourceType : DataMap.TargetType;
             }
         }
 
@@ -78,16 +78,16 @@ namespace DataMapper.Commands
         {
             switch (this.ChangeDirection)
             {
-                case CommandChangeDirection.ApplyChangesFromSourceToTarget:
+                case MappingDirection.SourceToTarget:
                     this.Target = obj;
                     break;
-                case CommandChangeDirection.ApplyChangesFromTargetToSource:
+                case MappingDirection.TargetToSource:
                     this.Source = obj;
                     break;
             }
         }
 
-        public Command(Command parent,PropertyMap parentCollectionPropertyMap, DataMap dataMap, CommandChangeDirection changeDirection, Object source,Object target)
+        public MappingInstruction(MappingInstruction parent,PropertyMap parentCollectionPropertyMap, DataMap dataMap, MappingDirection changeDirection, Object source,Object target)
         {
             this.Parent = parent;
             this.ParentCollectionPropertyMap = parentCollectionPropertyMap;
@@ -96,7 +96,7 @@ namespace DataMapper.Commands
             this.Source = source;
             this.Target = target;
 
-            this.ChildCommands = new CommandList();
+            this.Children = new MappingInstructionList();
 
             this.SetCommandType();
         }
@@ -106,30 +106,30 @@ namespace DataMapper.Commands
             {
                 if (this.ObjectDeliveringChanges == null)
                 {
-                    this.CommandType = CommandType.None;
+                    this.CommandType = MappingInstructionType.None;
                 }
                 else
                 {
-                    this.CommandType = CommandType.Create;
+                    this.CommandType = MappingInstructionType.Create;
                 }
             }
             else
             {
                 if (this.ObjectDeliveringChanges == null)
                 {
-                    this.CommandType = CommandType.Delete;
+                    this.CommandType = MappingInstructionType.Delete;
                 }
                 else
                 {
-                    this.CommandType = this.DataMap.ArePropertiesEqual(false, this.Source, this.Target)? CommandType.None: CommandType.Update;
+                    this.CommandType = this.DataMap.ArePropertiesEqual(false, this.Source, this.Target)? MappingInstructionType.None: MappingInstructionType.Update;
                 }
             }
         }
         
         //apply the changes that are in this datamapcommand
-        public CommandResult ApplyChanges()
+        public MappingInstructionResult ApplyChanges()
         {
-            CommandResult result = new CommandResult();
+            MappingInstructionResult result = new MappingInstructionResult();
 
             this.ApplyDeletes(result);
             this.ApplyCreates(result);
@@ -137,16 +137,20 @@ namespace DataMapper.Commands
 
             return result;
         }
-        private void ApplyDeletes(CommandResult commandResult)
+        private void ApplyDeletes(MappingInstructionResult commandResult)
         {
             //process the kids first. for the deletes, we want to do this bottom up.
-            this.ChildCommands.ForEach(a => a.ApplyDeletes(commandResult));
+            this.Children.ForEach(a => a.ApplyDeletes(commandResult));
 
             //if we have a delete then apply it
-            if (this.CommandType == CommandType.Delete)
+            if (this.CommandType == MappingInstructionType.Delete)
             {
                 //add the object to the list of things we are deleting
-                commandResult.ItemsDeleted.Add(new CommandResultItem(this.ObjectReceivingChangesType, this.ObjectReceivingChanges));
+                //commandResult.ItemsDeleted.Add(new LegacyItem(this.ObjectReceivingChangesType, this.ObjectReceivingChanges));
+
+                //add this to the list of items we are creating
+                commandResult.Items.Add(new Item(MappingInstructionType.Delete, this.ChangeDirection, 
+                    this.Source,DataMap.SourceType, this.Target, DataMap.TargetType, this.DataMap.PropertyMapList));
 
                 //do a delete from our parent list if we have one
                 if (this.HasParent)
@@ -159,11 +163,11 @@ namespace DataMapper.Commands
                 }
             }
         }
-        private void ApplyCreates(CommandResult commandResult)
+        private void ApplyCreates(MappingInstructionResult commandResult)
         {
             //if we have an add, do the work. if not, we shouldnt return,
             //we need to process the kids
-            if (this.CommandType == CommandType.Create)
+            if (this.CommandType == MappingInstructionType.Create)
             {
                 //create the new object
                 var newReceivingObject = this.ObjectReceivingChangesType.CreateInstance();
@@ -172,7 +176,7 @@ namespace DataMapper.Commands
                 this.SetObjectReceivingChanges(newReceivingObject);
 
                 //copy data from the delivering object
-                this.Map(this.Source, this.Target, this.ChangeDirection);
+                this.DataMap.PropertyMapList.MapNonCollection(this.Source, this.Target, this.ChangeDirection);
 
                 //do we have a parent? if so, we need to add this guy to the
                 //parent list
@@ -193,30 +197,32 @@ namespace DataMapper.Commands
                 }
 
                 //new items being tracked 
-                commandResult.ItemsAdded.Add(new CommandResultItem(this.ObjectReceivingChangesType, newReceivingObject));
+                //commandResult.ItemsAdded.Add(new LegacyItem(this.ObjectReceivingChangesType, newReceivingObject));
 
                 //add this to the list of items we are creating
-                commandResult.SourceTargetPairList.Add(new CommandResultSourceTargetPair(this.Source, this.Target, this.DataMap.PropertyMapList));
+                commandResult.Items.Add(new Item(MappingInstructionType.Create, this.ChangeDirection, this.Source, this.DataMap.SourceType,
+                    this.Target, this.DataMap.TargetType, this.DataMap.PropertyMapList));
             }
 
             //now the kids. adds have to happen 'top-down'
-            this.ChildCommands.ForEach(a => a.ApplyCreates(commandResult));
+            this.Children.ForEach(a => a.ApplyCreates(commandResult));
         }
-        private void ApplyUpdates(CommandResult commandResult)
+        private void ApplyUpdates(MappingInstructionResult commandResult)
         {
             //if we have an add, do the work. if not, we shouldnt return,
             //we need to process the kids
-            if (this.CommandType == CommandType.Update)
+            if (this.CommandType == MappingInstructionType.Update)
             {
                 //copy data from the delivering object
-                this.Map(this.Source, this.Target, this.ChangeDirection);
+                this.DataMap.PropertyMapList.MapNonCollection(this.Source, this.Target, this.ChangeDirection);
 
                 //add this to the list of items we are creating
-                commandResult.SourceTargetPairList.Add(new CommandResultSourceTargetPair(this.Source, this.Target, this.DataMap.PropertyMapList));
+                commandResult.Items.Add(new Item(MappingInstructionType.Update, this.ChangeDirection, this.Source,this.DataMap.SourceType,
+                    this.Target,this.DataMap.TargetType, this.DataMap.PropertyMapList));
             }
 
             //updates being done top down. could be done either way
-            this.ChildCommands.ForEach(a => a.ApplyUpdates(commandResult));
+            this.Children.ForEach(a => a.ApplyUpdates(commandResult));
         }
         private IDataMapperList FindParentReceivingList()
         {
@@ -232,12 +238,12 @@ namespace DataMapper.Commands
             //return new DataMapperList(item);
         }
 
-        public CommandChangeDirection ChangeDirection
+        public MappingDirection ChangeDirection
         {
             get;
             set;
         }
-        public CommandType CommandType
+        public MappingInstructionType CommandType
         {
             get;
             private set;
@@ -258,25 +264,6 @@ namespace DataMapper.Commands
             set;
         }
 
-        private void Map(Object source, Object target)
-        {
-            this.Map(source, target, this.ChangeDirection);
-        }
-        private void Map(Object source, Object target, CommandChangeDirection changeDirection)
-        {
-            foreach (var item in this.DataMap.PropertyMapList.Where(a => a.IsCollection == false))
-            {
-                switch (changeDirection)
-                {
-                    case CommandChangeDirection.ApplyChangesFromSourceToTarget:
-                        item.CopySourceToTarget(source, target);
-                        break;
-                    case CommandChangeDirection.ApplyChangesFromTargetToSource:
-                        item.CopyTargetToSource(source, target);
-                        break;
-                }
-            }
-        }
     }
     
     

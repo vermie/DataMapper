@@ -6,7 +6,7 @@ using DataMapper;
 using Theoretical.Data;
 using System.Data.Entity;
 using DataMapper.EntityFramework;
-using DataMapper.Commands;
+using DataMapper.Instructions;
 using DataMapper.Building;
 using DataMapper.Mapping;
 
@@ -63,11 +63,11 @@ namespace Theoretical.Business
 
 
                 //var newBusinessObject = new Order();
-                var dataMapCommandBuilder = new CommandBuilder();
+                var dataMapCommandBuilder = new MappingInstructionBuilder();
                 var dataMapCommand =
                     dataMapCommandBuilder.Build(
                     this._entityToBusinessDataMap,
-                    CommandChangeDirection.ApplyChangesFromSourceToTarget, freshDataObjectFromDatabase, null); // newBusinessObject);
+                    MappingDirection.SourceToTarget, freshDataObjectFromDatabase, null); // newBusinessObject);
 
                 var copyItemList = dataMapCommand.ApplyChanges();
 
@@ -94,11 +94,11 @@ namespace Theoretical.Business
                 var orderEntity = context.OrderEntity.CreateAndAdd();
 
                 //build the command
-                var dataMapCommandBuilder = new CommandBuilder();
+                var dataMapCommandBuilder = new MappingInstructionBuilder();
                 var dataMapCommand =
                     dataMapCommandBuilder.Build(
                     this._entityToBusinessDataMap,
-                    CommandChangeDirection.ApplyChangesFromTargetToSource, orderEntity, order);
+                    MappingDirection.TargetToSource, orderEntity, order);
 
                 //4. - Apply the changes from the business object to the data object.
                 var result = dataMapCommand.ApplyChanges();
@@ -107,7 +107,7 @@ namespace Theoretical.Business
                 context.SaveChanges();
 
                 //6.- remap any other changes back to the business object? or simply create a new business object and return that?
-                result.SourceTargetPairList.UpdateSourceToTarget();
+                result.Items.Copy(MappingDirection.SourceToTarget);
 
                 //7.- save the memento?
                 //this.TrySaveMemento(order);
@@ -128,15 +128,15 @@ namespace Theoretical.Business
                     return;
                 }
 
-                var dataMapCommandBuilder = new CommandBuilder();
+                var dataMapCommandBuilder = new MappingInstructionBuilder();
                 var dataMapCommand =
                     dataMapCommandBuilder.Build(
                     this._entityToBusinessDataMap,
-                    CommandChangeDirection.ApplyChangesFromTargetToSource, freshDataObjectFromDatabase, null);
+                    MappingDirection.TargetToSource, freshDataObjectFromDatabase, null);
 
                 var result = dataMapCommand.ApplyChanges();
 
-                result.ItemsDeleted.ForEach(a => context.Set(a.ItemType).Remove(a.Item));
+                result.ItemsDeleted.ForEach(a => context.Set(a.ObjectReceivingChangesType).Remove(a.ObjectReceivingChanges));
 
                 context.SaveChanges();
 
@@ -159,19 +159,19 @@ namespace Theoretical.Business
                     throw new Exception("Cant do update");
                 }
 
-                var dataMapCommandBuilder = new CommandBuilder();
+                var dataMapCommandBuilder = new MappingInstructionBuilder();
                 var dataMapCommand =
                     dataMapCommandBuilder.Build(this._entityToBusinessDataMap,
-                    CommandChangeDirection.ApplyChangesFromTargetToSource, freshDataObjectFromDatabase, order);
+                    MappingDirection.TargetToSource, freshDataObjectFromDatabase, order);
 
                 var result = dataMapCommand.ApplyChanges();
 
-                result.ItemsDeleted.ForEach(a => context.Set(a.ItemType).Remove(a.Item));
+                result.ItemsDeleted.ForEach(a => context.Set(a.ObjectReceivingChangesType).Remove(a.ObjectReceivingChanges));
 
                 context.SaveChanges();
 
                 //we still need to read the keys back out from the context item.
-                result.SourceTargetPairList.UpdateSourceToTarget();
+                result.Items.Copy(MappingDirection.SourceToTarget);
             }
         }
 
