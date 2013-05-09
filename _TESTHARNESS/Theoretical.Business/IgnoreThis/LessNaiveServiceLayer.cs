@@ -5,7 +5,6 @@ using System.Text;
 using Theoretical.Data;
 using DataMapper;
 using System.Data.Entity;
-using DataMapper.EntityFramework;
 using DataMapper.Instructions;
 using DataMapper.Building;
 using DataMapper.Mapping;

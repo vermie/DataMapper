@@ -80,24 +80,4 @@ namespace DataMapper.Instructions
 
     }
 
-    //[Serializable()]
-    //public class LegacyItem
-    //{
-    //    public Type Type
-    //    {
-    //        get;
-    //        set;
-    //    }
-    //    public Object Value
-    //    {
-    //        get;
-    //        set;
-    //    }
-
-    //    public LegacyItem(Type itemType, Object item)
-    //    {
-    //        this.Type = itemType;
-    //        this.Value = item;
-    //    }
-    //}
 }

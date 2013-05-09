@@ -85,9 +85,5 @@ namespace DataMapper.Instructions
         }
     }
 
-    //[Serializable()]
-    //public class LegacyItemList : List<LegacyItem>
-    //{
 
-    //}
 }

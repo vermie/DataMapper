@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using Theoretical.Business;
 using DataMapper;
-using DataMapper.EntityFramework;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Diagnostics;
@@ -44,6 +43,10 @@ namespace Theoretical.Application
             {
                 OrderDataMapBlock dataMapBlock = new OrderDataMapBlock();
 
+                //set the juicy context...
+                var context = new DataMapper.Repositories.EntityFrameworkRepositoryContext(new TheoreticalEntities());
+                dataMapBlock.Context = context;
+
                 //just to simplify stuff, you can ignore these two lines
                 var sl = new LastRevisionServiceLayer();
                 sl.DeleteAll();
@@ -53,6 +56,7 @@ namespace Theoretical.Application
                 var addOrder = CreateNewOrder();
                 //sl.Add(addOrder);
                 dataMapBlock.Add(addOrder);
+                context.SaveChanges();
 
                 var addFindResult = dataMapBlock.TryFind(addOrder.OrderId);
 
@@ -68,12 +72,34 @@ namespace Theoretical.Application
                 });
 
                 dataMapBlock.Update(addFindResult);
+                context.SaveChanges();
 
                 addFindResult.OrderInformation.Last().TrackingNumber = "Giggidy";
 
                 dataMapBlock.Update(addFindResult);
+                context.SaveChanges();
 
                 dataMapBlock.Delete(addFindResult);
+                context.SaveChanges();
+
+                Order whatever;
+                Order whatever2;
+                using (var tranny = new System.Transactions.TransactionScope())
+                {
+                    whatever = CreateNewOrder();
+                    whatever.Number = "FUck";
+                    dataMapBlock.Add(whatever);
+                    context.SaveChanges();
+
+                    whatever2 = CreateNewOrder();
+                    whatever2.Number = "YeahMan";
+                    dataMapBlock.Add(whatever2);
+                    context.SaveChanges();
+
+                    tranny.Complete();
+                }
+
+                whatever = whatever;
             }
             catch (Exception ex)
             {
@@ -371,8 +397,8 @@ namespace Theoretical.Application
                 orderForDeleteBreak.Number = "orderForDeleteBreak" + Guid.NewGuid().ToString();
                 sl.Add(orderForDeleteBreak);
 
-                var bytestream = DataMapper.EntityFramework.Extensions.SerializeBinaryToByteStream(orderForDeleteBreak);
-                orderForDeleteBreak = DataMapper.EntityFramework.Extensions.DeserializeBinaryByteStream<Order>(bytestream);
+                var bytestream = DataMapper.EntityFrameworkExtensions.SerializeBinaryToByteStream(orderForDeleteBreak);
+                orderForDeleteBreak = DataMapper.EntityFrameworkExtensions.DeserializeBinaryByteStream<Order>(bytestream);
                 //orderForDeleteBreak.OrderItem.Remove(orderForDeleteBreak.OrderItem.First());
                 orderForDeleteBreak.OrderItem.Clear();
                 try

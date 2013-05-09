@@ -7,9 +7,9 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Data.Entity;
 
-namespace DataMapper.EntityFramework
+namespace DataMapper
 {
-    public static partial class Extensions
+    public static partial class EntityFrameworkExtensions
     {
 
         public static Boolean IsType<T>(this Object item)

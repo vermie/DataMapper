@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using Theoretical.Data;
 using DataMapper;
-using DataMapper.EntityFramework;
 
 namespace Theoretical.Business
 {
