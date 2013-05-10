@@ -10,12 +10,12 @@ using DataMapper.Repositories;
 
 namespace Theoretical.Business
 {
-    public class OrderDataMapBlock : CrudEntityFrameworkRepository<Order, OrderEntity, TheoreticalEntities, Int32>
+    public class OrderDataMapBlock : EntityFrameworkCrudRepository<Order, OrderEntity, TheoreticalEntities, Int32>
     {
 
     }
 
-    public class OrderPocoDataMapBlock : CrudEntityFrameworkRepository<OrderPoco,OrderEntity,TheoreticalEntities, Int32>
+    public class OrderPocoDataMapBlock : EntityFrameworkCrudRepository<OrderPoco,OrderEntity,TheoreticalEntities, Int32>
     {
         protected override void DefineDataMap(DataMapBuilder<OrderPoco, OrderEntity> builder)
         {

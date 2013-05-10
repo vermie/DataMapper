@@ -65,6 +65,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IgnoreThis\ScratchPad.cs" />
     <Compile Include="IgnoreThis\Vermie.cs" />
+    <Compile Include="SimpleRepoThingy.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -52,10 +52,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Repositories\DataMapEntityRepository.cs" />
+    <Compile Include="Repositories\EntityFrameworkCrudRepository.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\EntityFrameworkRepository.cs" />
+    <Compile Include="Repositories\EntityFrameworkSelfRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DataMapper\DataMapper.csproj">

@@ -45,10 +45,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataMapper.feature.cs">
+    <Compile Include="TypeMapStore.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>DataMapper.feature</DependentUpon>
+      <DependentUpon>TypeMapStore.feature</DependentUpon>
     </Compile>
     <Compile Include="Helpers\AccountEntity.cs" />
     <Compile Include="Helpers\AccountObject.cs" />
@@ -62,9 +62,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="DataMapper.feature">
+    <None Include="TypeMapStore.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>DataMapper.feature.cs</LastGenOutput>
+      <LastGenOutput>TypeMapStore.feature.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />
   </ItemGroup>

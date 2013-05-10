@@ -10,12 +10,20 @@ using DataMapper.Mapping;
 namespace DataMapper.Repositories
 {
 
+    /// <summary>
+    /// Provides an implementation for a repository that encapsulates the mapping of changes from a
+    /// business objects aggregate to an entity framework aggregate. 
+    /// </summary>
+    /// <typeparam name="TAggregate">A type that represents the aggregate root - usually of a business or service layer.</typeparam>
+    /// <typeparam name="TEntity">A type that represents the corresponding entity framework root object.</typeparam>
+    /// <typeparam name="TDbContext">The database context. Note that the 'TEntity' type must be defined in this context.</typeparam>
     public abstract class EntityFrameworkRepository<TAggregate, TEntity, TDbContext> : Repository<TAggregate, TEntity>
         where TDbContext : DbContext, new()
         where TAggregate : new()
         where TEntity : new()
     {
-        #region Private/Internal
+
+        #region Non-Public
         private Type DbContextType
         {
             get
@@ -114,9 +122,13 @@ namespace DataMapper.Repositories
 
         private List<Action> _actionJackson = new List<Action>();
 
-        #endregion
+        private void ChangesCommitted(object sender, EventArgs e)
+        {
+            //do it baby!probably fucking up some stuff about how closures work....eh
+            this._actionJackson.ForEach(a => a());
 
-        #region Protected
+            this._actionJackson.Clear();
+        }
 
         protected void AddAggregate(TAggregate aggregate)
         {
@@ -276,9 +288,9 @@ namespace DataMapper.Repositories
         #endregion
 
         #region Public
-        private EntityFrameworkRepositoryContext _context;
+        private EntityFrameworkRepositoryContext<TDbContext> _context;
 
-        public EntityFrameworkRepositoryContext Context
+        public EntityFrameworkRepositoryContext<TDbContext> Context
         {
             get
             {
@@ -300,13 +312,6 @@ namespace DataMapper.Repositories
             }
         }
 
-        private void ChangesCommitted(object sender, EventArgs e)
-        {
-            //do it baby!probably fucking up some stuff about how closures work....eh
-            this._actionJackson.ForEach(a => a());
-
-            this._actionJackson.Clear();
-        }
 
 
         #endregion
@@ -317,15 +322,20 @@ namespace DataMapper.Repositories
         void SaveChanges();
         event EventHandler ChangesCommitted;
     }
-    public class EntityFrameworkRepositoryContext : IRepositoryContext, IDisposable
+    public class EntityFrameworkRepositoryContext<TDbContext> : IRepositoryContext, IDisposable
+        where TDbContext : DbContext, new()
     {
-        public DbContext DbContext
+        public TDbContext DbContext
         {
             get;
             private set;
         }
 
-        public EntityFrameworkRepositoryContext(DbContext dbContext)
+        public EntityFrameworkRepositoryContext()
+        {
+            this.DbContext = new TDbContext();
+        }
+        public EntityFrameworkRepositoryContext(TDbContext dbContext)
         {
             this.DbContext = dbContext;
         }

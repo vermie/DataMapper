@@ -21,7 +21,10 @@ namespace Theoretical.Application
             try
             {
                 //this uses straight up mapping
-                DataMapBlock();
+                //DataMapBlock();
+
+                //the thingie
+                SimpleThingy();
 
                 //this shows how you can rename things
                 //DataMapBlockOdd();
@@ -44,7 +47,11 @@ namespace Theoretical.Application
                 OrderDataMapBlock dataMapBlock = new OrderDataMapBlock();
 
                 //set the juicy context...
-                var context = new DataMapper.Repositories.EntityFrameworkRepositoryContext(new TheoreticalEntities());
+                var efContext = new TheoreticalEntities();
+                efContext.Configuration.LazyLoadingEnabled = false;
+                efContext.Configuration.ProxyCreationEnabled = false;
+                //efContext.Configuration.ValidateOnSaveEnabled = false;
+                var context = new DataMapper.Repositories.EntityFrameworkRepositoryContext<TheoreticalEntities>(efContext);
                 dataMapBlock.Context = context;
 
                 //just to simplify stuff, you can ignore these two lines
@@ -207,6 +214,67 @@ namespace Theoretical.Application
             Console.ReadKey();
         }
 
+        static void SimpleThingy()
+        {
+            try
+            {
+                SimpleRepoThingy repo = new SimpleRepoThingy();
+
+                //set the juicy context...
+                var efContext = new TheoreticalEntities();
+                efContext.Configuration.LazyLoadingEnabled = false;
+                efContext.Configuration.ProxyCreationEnabled = false;
+                //efContext.Configuration.ValidateOnSaveEnabled = false;
+                var context = new DataMapper.Repositories.EntityFrameworkRepositoryContext<TheoreticalEntities>(efContext);
+                repo.Context = context;
+
+                //just to simplify stuff, you can ignore these two lines
+                var sl = new LastRevisionServiceLayer();
+                sl.DeleteAll();
+
+                var findResult = repo.TryFind(134);
+
+                var addOrder = CreateNewOrderEntity();
+
+                //addOrder.RenamedStatus = StatusEnum.Giggidy;
+
+                //sl.Add(addOrder);
+                repo.Add(addOrder);
+                context.SaveChanges();
+
+                var addFindResult = repo.TryFind(addOrder.OrderId);
+
+                //remove last and add a new one. 
+                addFindResult.OrderItem.Remove(addFindResult.OrderItem.Last());
+                addFindResult.OrderItem.Add(new OrderItemEntity()
+                {
+                    HasSerialNumber = false,
+                    SalePrice = 1000M,
+                    SerialNumber = "ADDEDITEM",
+                    Upc = "ADDUPC",
+                    ConcurrencyId = 0
+                });
+
+                repo.Update(addFindResult);
+                context.SaveChanges();
+
+                addFindResult.OrderInformation.Last().TrackingNumber = "Giggidy";
+
+                repo.Update(addFindResult);
+                context.SaveChanges();
+
+                repo.Delete(addFindResult);
+                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                Console.Write(ex.ToString());
+            }
+
+            Console.WriteLine("Press any key to exit");
+            Console.ReadKey();
+        }
+
         static OrderPoco CreateNewOrderPoco()
         {
             OrderPoco newOrder = new OrderPoco()
@@ -245,6 +313,54 @@ namespace Theoretical.Application
                         TrackingNumber = "TRK100500"
                     },
                     new OrderInformationPoco()
+                    {
+                        TrackAmount = null,
+                        TrackDate = null,
+                        TrackingNumber = null
+                    }
+                }
+            };
+
+            return newOrder;
+        }
+        static OrderEntity CreateNewOrderEntity()
+        {
+            OrderEntity newOrder = new OrderEntity()
+            {
+                Number = "4000" + Guid.NewGuid().ToString(),
+                OrderDate = DateTime.Now,
+                AccountId = 1,
+                Status = (Int32)StatusEnum.Giggidy,
+                TaxRate = (34.23m),
+                ConcurrencyId = 0,
+                OptionalNote = null,
+                OptionalPrice = 123M,
+                OrderItem = new List<OrderItemEntity>()
+                        {
+                            new OrderItemEntity() {
+                                ConcurrencyId = 0,
+                                HasSerialNumber = false,
+                                SalePrice = 34.12M,
+                                SerialNumber = "",
+                                Upc = "MYUPC"
+                            },
+                            new OrderItemEntity() {
+                                ConcurrencyId = 0,
+                                HasSerialNumber = true,
+                                SalePrice = 134.12M,
+                                SerialNumber = "ASerialnumber",
+                                Upc = "OHTERUPC"
+                            }
+                        },
+                OrderInformation = new List<OrderInformationEntity>()
+                {
+                    new OrderInformationEntity()
+                    {
+                        TrackAmount = 100,
+                        TrackDate = DateTime.Now,
+                        TrackingNumber = "TRK100500"
+                    },
+                    new OrderInformationEntity()
                     {
                         TrackAmount = null,
                         TrackDate = null,
