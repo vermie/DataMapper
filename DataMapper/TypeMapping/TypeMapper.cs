@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using DataMapper.Building;
@@ -21,28 +22,18 @@ namespace DataMapper.TypeMapping
             return this;
         }
 
-        public new ITypeMapper<Source, Target> MapProperty(System.Linq.Expressions.Expression<Func<Source, object>> sourcePropertyExpression, System.Linq.Expressions.Expression<Func<Target, object>> targetPropertyExpression)
-        {
-            base.MapProperty(sourcePropertyExpression, targetPropertyExpression);
-
-            return this;
-        }
-
-        public new ITypeMapper<Source, Target> MapProperty(System.Linq.Expressions.Expression<Func<Source, object>> sourcePropertyExpression, System.Linq.Expressions.Expression<Func<Target, object>> targetPropertyExpression, MappedPropertyType mappedPropertyType)
-        {
-            base.MapProperty(sourcePropertyExpression, targetPropertyExpression, mappedPropertyType);
-
-            return this;
-        }
-
-        public new ITypeMapper<Source, Target> MapProperty(System.Linq.Expressions.Expression<Func<Source, object>> sourcePropertyExpression, System.Linq.Expressions.Expression<Func<Target, object>> targetPropertyExpression, MappedPropertyType mappedPropertyType, Conversion.ITypeConverter typeConverter)
+        public new ITypeMapper<Source, Target> MapProperty<TSourceProperty, TTargetProperty>(
+            Expression<Func<Source, TSourceProperty>> sourcePropertyExpression,
+            Expression<Func<Target, TTargetProperty>> targetPropertyExpression,
+            MappedPropertyType mappedPropertyType = MappedPropertyType.Field,
+            DataMapper.Conversion.ITypeConverter typeConverter = null)
         {
             base.MapProperty(sourcePropertyExpression, targetPropertyExpression, mappedPropertyType, typeConverter);
 
             return this;
         }
 
-        public new ITypeMapper<Source, Target> MapPropertyByConvention(System.Linq.Expressions.Expression<Func<Source, object>> sourcePropertyExpression)
+        public new ITypeMapper<Source, Target> MapPropertyByConvention(Expression<Func<Source, object>> sourcePropertyExpression)
         {
             base.MapPropertyByConvention(sourcePropertyExpression);
 

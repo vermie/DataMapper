@@ -10,37 +10,29 @@ namespace DataMapper.Building
     internal class Utility
     {
 
-        internal static PropertyInfo GetPropertyInfo<TObject>(Expression<Func<TObject, object>> propertyRefExpr)
+        internal static PropertyInfo GetPropertyInfo<TObject, TProperty>(Expression<Func<TObject, TProperty>> propertyRefExpr)
         {
-            String propertyName = GetPropertyNameCore(propertyRefExpr.Body);
+            var body = propertyRefExpr.Body;
+            var expr = propertyRefExpr.Body as MemberExpression;
 
-            var pInfo = typeof(TObject).GetProperty(propertyName);
-
-            if (pInfo == null)
-                throw new ArgumentException("Property '{0}' not found on type '{0}'".FormatString(propertyName, typeof(TObject).FullName));
-
-            return pInfo;
-        }
-
-        private static string GetPropertyNameCore(Expression propertyRefExpr)
-        {
-            if (propertyRefExpr == null)
-                throw new ArgumentNullException("propertyRefExpr", "propertyRefExpr is null.");
-
-            MemberExpression memberExpr = propertyRefExpr as MemberExpression;
-            if (memberExpr == null)
+            // includes things like:
+            //   casts
+            //   implicit/explicit conversion operators
+            //   VB's CType
+            //   boxed value types
+            // probably should not support these, instead strictly enforce member access
+            while (expr == null && body.NodeType == ExpressionType.Convert)
             {
-                UnaryExpression unaryExpr = propertyRefExpr as UnaryExpression;
-                if (unaryExpr != null && unaryExpr.NodeType == ExpressionType.Convert)
-                    memberExpr = unaryExpr.Operand as MemberExpression;
+                var convert = (UnaryExpression)body;
+                expr = convert.Operand as MemberExpression;
+                body = expr;
             }
 
-            if (memberExpr != null && memberExpr.Member.MemberType == MemberTypes.Property)
-                return memberExpr.Member.Name;
+            if (expr == null || !(expr.Member is PropertyInfo))
+                throw new ArgumentException("expression '{0}' must be a property-access expression".FormatString(propertyRefExpr), "expression");
 
-            throw new ArgumentException("No property reference expression was found.",
-                             "propertyRefExpr");
+            return (PropertyInfo)expr.Member;
         }
-        
+
     }
 }
