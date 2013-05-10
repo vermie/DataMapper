@@ -128,7 +128,7 @@ namespace DataMapper
         //}
         public static IEnumerable<PropertyInfo> GetMappingProperties(this Type type)
         {
-            BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic;
+            BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
 
             return type.GetProperties(bindingFlags);
         }

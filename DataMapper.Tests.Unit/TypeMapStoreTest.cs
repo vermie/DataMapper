@@ -1,4 +1,5 @@
 ﻿
+using System;
 using DataMapper.TypeMapping;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -57,6 +58,28 @@ namespace DataMapper.Tests.Unit
             typeMapStore.Map<TestSource, TestTarget>(null, null);
 
 
+        }
+
+        private class NonPublicMember
+        {
+            private Int32 CantBeIgnoredBecauseItsPrivate { get; set; }
+            protected Int32 CantBeIgnoredBecauseItsProtected { get; set; }
+        }
+        [TestMethod]
+        public void Validate_ShouldSucceed_WhenNonPublicSourcePropertiesAreNotMapped()
+        {
+            var tms = new TypeMapStore();
+
+            tms.Define<NonPublicMember, Object>();
+
+            try
+            {
+                tms.Finish();
+            }
+            catch (TypeMapValidationException)
+            {
+                Assert.Fail();
+            }
         }
 
         //[TestMethod]
