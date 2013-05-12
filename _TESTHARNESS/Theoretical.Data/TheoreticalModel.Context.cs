@@ -28,6 +28,6 @@ namespace Theoretical.Data
         public DbSet<OrderEntity> OrderEntity { get; set; }
         public DbSet<OrderInformationEntity> OrderInformationEntity { get; set; }
         public DbSet<OrderItemEntity> OrderItemEntity { get; set; }
-        public DbSet<Product> Products { get; set; }
+        public DbSet<MultiKeyEntity> MultiKeyEntity { get; set; }
     }
 }

@@ -51,9 +51,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\MultiKey.cs" />
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\OrderInformation.cs" />
     <Compile Include="Models\OrderItem.cs" />
+    <Compile Include="MoreModels\MultiKeyPoco.cs" />
     <Compile Include="MoreModels\OrderInformationPoco.cs" />
     <Compile Include="MoreModels\OrderPoco.cs" />
     <Compile Include="MoreModels\OrderItemPoco.cs" />

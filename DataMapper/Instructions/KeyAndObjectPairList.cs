@@ -6,7 +6,7 @@ using System.Text;
 namespace DataMapper.Instructions
 {
     [Serializable()]
-    internal class KeyAndObjectPairList : List<KeyAndObjectPair>
+    internal class KeyAndObjectPairList<TKey> : List<KeyAndObjectPair<TKey>>
     {
 
     }

@@ -6,11 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using DataMapper.Mapping;
 
-namespace DataMapper.Cache
+namespace DataMapper.Caching
 {
-    internal sealed class DataMapCache
-    {
 
+    public class DataMapCache
+    {
         private static DataMapCache Cache
         {
             get;
@@ -62,29 +62,6 @@ namespace DataMapper.Cache
 
                 return this.Dictionary.TryGetValue(key, out dataMap) ? dataMap : null;
             }
-        }
-    }
-
-    public class CacheItem
-    {
-        public String Key
-        {
-            get;
-            private set;
-        }
-        public DataMap DataMap
-        {
-            get;
-            private set;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return this.Key.Equals(obj);
-        }
-        public override int GetHashCode()
-        {
-            return this.Key.GetHashCode();
         }
     }
 }

@@ -6,10 +6,14 @@
     <edmx:StorageModels>
     <Schema Namespace="TheoreticalModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityContainer Name="TheoreticalModelStoreContainer">
+          <EntitySet Name="MultiKey" EntityType="TheoreticalModel.Store.MultiKey" store:Type="Tables" Schema="dbo" />
           <EntitySet Name="Order" EntityType="TheoreticalModel.Store.Order" store:Type="Tables" Schema="dbo" />
           <EntitySet Name="OrderInformation" EntityType="TheoreticalModel.Store.OrderInformation" store:Type="Tables" Schema="dbo" />
           <EntitySet Name="OrderItem" EntityType="TheoreticalModel.Store.OrderItem" store:Type="Tables" Schema="dbo" />
-          <EntitySet Name="Product" EntityType="TheoreticalModel.Store.Product" store:Type="Tables" Schema="dbo" />
+          <AssociationSet Name="FK_MultiKey_Order" Association="TheoreticalModel.Store.FK_MultiKey_Order">
+            <End Role="Order" EntitySet="Order" />
+            <End Role="MultiKey" EntitySet="MultiKey" />
+          </AssociationSet>
           <AssociationSet Name="FK_OrderInformation_Order" Association="TheoreticalModel.Store.FK_OrderInformation_Order">
             <End Role="Order" EntitySet="Order" />
             <End Role="OrderInformation" EntitySet="OrderInformation" />
@@ -19,12 +23,25 @@
             <End Role="OrderItem" EntitySet="OrderItem" />
           </AssociationSet>
         </EntityContainer>
+        <EntityType Name="MultiKey">
+          <Key>
+            <PropertyRef Name="KeyOne" />
+            <PropertyRef Name="KeyTwo" />
+            <PropertyRef Name="KeyThree" />
+          </Key>
+          <Property Name="KeyOne" Type="int" Nullable="false" />
+          <Property Name="KeyTwo" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="KeyThree" Type="varchar" Nullable="false" MaxLength="10" />
+          <Property Name="OrderId" Type="int" Nullable="false" />
+          <Property Name="Number" Type="varchar" Nullable="false" MaxLength="20" />
+          <Property Name="Name" Type="varchar" Nullable="false" MaxLength="100" />
+          <Property Name="ConcurrencyId" Type="int" Nullable="false" />
+        </EntityType>
         <EntityType Name="Order">
           <Key>
             <PropertyRef Name="OrderId" />
           </Key>
           <Property Name="OrderId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
-          <Property Name="AccountId" Type="int" Nullable="false" />
           <Property Name="Status" Type="int" Nullable="false" />
           <Property Name="Number" Type="varchar" Nullable="false" MaxLength="100" />
           <Property Name="OrderDate" Type="datetime" Nullable="false" />
@@ -55,21 +72,24 @@
           <Property Name="SerialNumber" Type="varchar" Nullable="false" MaxLength="100" />
           <Property Name="ConcurrencyId" Type="int" Nullable="false" />
         </EntityType>
-        <EntityType Name="Product">
-          <Key>
-            <PropertyRef Name="ProductId" />
-          </Key>
-          <Property Name="ProductId" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
-          <Property Name="VendorName" Type="varchar" Nullable="false" MaxLength="100" />
-          <Property Name="Category" Type="varchar" Nullable="false" MaxLength="100" />
-          <Property Name="Description" Type="varchar" Nullable="false" MaxLength="255" />
-          <Property Name="SalePrice" Type="money" Nullable="false" />
-          <Property Name="IsDiscontinued" Type="bit" Nullable="false" />
-          <Property Name="IsSerialNumberRequired" Type="bit" Nullable="false" />
-          <Property Name="ConcurrencyId" Type="int" Nullable="false" />
-        </EntityType>
+        <Association Name="FK_MultiKey_Order">
+          <End Role="Order" Type="TheoreticalModel.Store.Order" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="MultiKey" Type="TheoreticalModel.Store.MultiKey" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Order">
+              <PropertyRef Name="OrderId" />
+            </Principal>
+            <Dependent Role="MultiKey">
+              <PropertyRef Name="OrderId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_OrderInformation_Order">
-          <End Role="Order" Type="TheoreticalModel.Store.Order" Multiplicity="1" />
+          <End Role="Order" Type="TheoreticalModel.Store.Order" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="OrderInformation" Type="TheoreticalModel.Store.OrderInformation" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Order">
@@ -81,7 +101,9 @@
           </ReferentialConstraint>
         </Association>
         <Association Name="FK_OrderItem_Order">
-          <End Role="Order" Type="TheoreticalModel.Store.Order" Multiplicity="1" />
+          <End Role="Order" Type="TheoreticalModel.Store.Order" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
           <End Role="OrderItem" Type="TheoreticalModel.Store.OrderItem" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Order">
@@ -108,14 +130,17 @@
             <End Role="Order" EntitySet="OrderEntity" />
             <End Role="OrderItem" EntitySet="OrderItemEntity" />
           </AssociationSet>
-          <EntitySet Name="Products" EntityType="TheoreticalModel.Product" />
+          <EntitySet Name="MultiKeyEntity" EntityType="TheoreticalModel.MultiKeyEntity" />
+          <AssociationSet Name="FK_MultiKey_Order" Association="TheoreticalModel.FK_MultiKey_Order">
+            <End Role="OrderEntity" EntitySet="OrderEntity" />
+            <End Role="MultiKeyEntity" EntitySet="MultiKeyEntity" />
+          </AssociationSet>
         </EntityContainer>
         <EntityType Name="OrderEntity">
           <Key>
             <PropertyRef Name="OrderId" />
           </Key>
           <Property Name="OrderId" Type="Int32" Nullable="false" p1:StoreGeneratedPattern="Identity" />
-          <Property Name="AccountId" Type="Int32" Nullable="false" />
           <Property Name="Status" Type="Int32" Nullable="false" />
           <Property Name="Number" Type="String" Nullable="false" MaxLength="100" Unicode="false" FixedLength="false" />
           <Property Name="OrderDate" Type="DateTime" Nullable="false" Precision="3" />
@@ -125,6 +150,7 @@
           <Property Name="OptionalPrice" Type="Decimal" Precision="19" Scale="4" />
           <NavigationProperty Name="OrderInformation" Relationship="TheoreticalModel.FK_OrderInformation_Order" FromRole="Order" ToRole="OrderInformation" />
           <NavigationProperty Name="OrderItem" Relationship="TheoreticalModel.FK_OrderItem_Order" FromRole="Order" ToRole="OrderItem" />
+          <NavigationProperty Name="MultiKey" Relationship="TheoreticalModel.FK_MultiKey_Order" FromRole="OrderEntity" ToRole="MultiKeyEntity" />
         </EntityType>
         <EntityType Name="OrderInformationEntity">
           <Key>
@@ -174,19 +200,35 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="Product">
+        <EntityType Name="MultiKeyEntity">
           <Key>
-            <PropertyRef Name="ProductId" />
+            <PropertyRef Name="KeyOne" />
+            <PropertyRef Name="KeyTwo" />
+            <PropertyRef Name="KeyThree" />
           </Key>
-          <Property Type="Int32" Name="ProductId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Type="String" Name="VendorName" Nullable="false" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Type="String" Name="Category" Nullable="false" MaxLength="100" FixedLength="false" Unicode="false" />
-          <Property Type="String" Name="Description" Nullable="false" MaxLength="255" FixedLength="false" Unicode="false" />
-          <Property Type="Decimal" Name="SalePrice" Nullable="false" Precision="19" Scale="4" />
-          <Property Type="Boolean" Name="IsDiscontinued" Nullable="false" />
-          <Property Type="Boolean" Name="IsSerialNumberRequired" Nullable="false" />
+          <Property Type="Int32" Name="KeyOne" Nullable="false" />
+          <Property Type="Guid" Name="KeyTwo" Nullable="false" />
+          <Property Type="String" Name="KeyThree" Nullable="false" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Number" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Name" Nullable="false" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Type="Int32" Name="ConcurrencyId" Nullable="false" />
+          <Property Type="Int32" Name="OrderId" Nullable="false" />
+          <NavigationProperty Name="Order" Relationship="TheoreticalModel.FK_MultiKey_Order" FromRole="MultiKeyEntity" ToRole="OrderEntity" />
         </EntityType>
+        <Association Name="FK_MultiKey_Order">
+          <End Type="TheoreticalModel.OrderEntity" Role="OrderEntity" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="TheoreticalModel.MultiKeyEntity" Role="MultiKeyEntity" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="OrderEntity">
+              <PropertyRef Name="OrderId" />
+            </Principal>
+            <Dependent Role="MultiKeyEntity">
+              <PropertyRef Name="OrderId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -197,7 +239,6 @@
             <EntityTypeMapping TypeName="TheoreticalModel.OrderEntity">
               <MappingFragment StoreEntitySet="Order">
                 <ScalarProperty Name="OrderId" ColumnName="OrderId" />
-                <ScalarProperty Name="AccountId" ColumnName="AccountId" />
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="Number" ColumnName="Number" />
                 <ScalarProperty Name="OrderDate" ColumnName="OrderDate" />
@@ -232,17 +273,16 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Products">
-            <EntityTypeMapping TypeName="TheoreticalModel.Product">
-              <MappingFragment StoreEntitySet="Product">
+          <EntitySetMapping Name="MultiKeyEntity">
+            <EntityTypeMapping TypeName="TheoreticalModel.MultiKeyEntity">
+              <MappingFragment StoreEntitySet="MultiKey">
+                <ScalarProperty Name="OrderId" ColumnName="OrderId" />
                 <ScalarProperty Name="ConcurrencyId" ColumnName="ConcurrencyId" />
-                <ScalarProperty Name="IsSerialNumberRequired" ColumnName="IsSerialNumberRequired" />
-                <ScalarProperty Name="IsDiscontinued" ColumnName="IsDiscontinued" />
-                <ScalarProperty Name="SalePrice" ColumnName="SalePrice" />
-                <ScalarProperty Name="Description" ColumnName="Description" />
-                <ScalarProperty Name="Category" ColumnName="Category" />
-                <ScalarProperty Name="VendorName" ColumnName="VendorName" />
-                <ScalarProperty Name="ProductId" ColumnName="ProductId" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Number" ColumnName="Number" />
+                <ScalarProperty Name="KeyThree" ColumnName="KeyThree" />
+                <ScalarProperty Name="KeyTwo" ColumnName="KeyTwo" />
+                <ScalarProperty Name="KeyOne" ColumnName="KeyOne" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -260,7 +300,7 @@
     <Options>
       <DesignerInfoPropertySet>
         <DesignerProperty Name="ValidateOnBuild" Value="true" />
-        <DesignerProperty Name="EnablePluralization" Value="True" />
+        <DesignerProperty Name="EnablePluralization" Value="False" />
         <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
         <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
       </DesignerInfoPropertySet>

@@ -12,15 +12,16 @@ namespace Theoretical.Data
     using System;
     using System.Collections.Generic;
     
-    public partial class Product
+    public partial class MultiKeyEntity
     {
-        public int ProductId { get; set; }
-        public string VendorName { get; set; }
-        public string Category { get; set; }
-        public string Description { get; set; }
-        public decimal SalePrice { get; set; }
-        public bool IsDiscontinued { get; set; }
-        public bool IsSerialNumberRequired { get; set; }
+        public int KeyOne { get; set; }
+        public System.Guid KeyTwo { get; set; }
+        public string KeyThree { get; set; }
+        public string Number { get; set; }
+        public string Name { get; set; }
         public int ConcurrencyId { get; set; }
+        public int OrderId { get; set; }
+    
+        public virtual OrderEntity Order { get; set; }
     }
 }

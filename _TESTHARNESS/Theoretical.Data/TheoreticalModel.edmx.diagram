@@ -4,13 +4,14 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="7f1d8ba97acd4cd49f8d6d06eff04fec" Name="Diagram1" ZoomLevel="40">
+      <Diagram DiagramId="7f1d8ba97acd4cd49f8d6d06eff04fec" Name="Diagram1" ZoomLevel="88">
         <EntityTypeShape EntityType="TheoreticalModel.OrderEntity" Width="1.5" PointX="0.75" PointY="2.25" IsExpanded="true" />
         <EntityTypeShape EntityType="TheoreticalModel.OrderInformationEntity" Width="1.5" PointX="3" PointY="1.125" IsExpanded="true" />
         <EntityTypeShape EntityType="TheoreticalModel.OrderItemEntity" Width="1.5" PointX="3" PointY="4" IsExpanded="true" />
         <AssociationConnector Association="TheoreticalModel.FK_OrderInformation_Order" ManuallyRouted="false" />
         <AssociationConnector Association="TheoreticalModel.FK_OrderItem_Order" ManuallyRouted="false" />
-        <EntityTypeShape EntityType="TheoreticalModel.Product" Width="1.5" PointX="9.55627475937655" PointY="17.655109056111009" />
+        <EntityTypeShape EntityType="TheoreticalModel.MultiKeyEntity" Width="1.5" PointX="6.25" PointY="2.5" />
+        <AssociationConnector Association="TheoreticalModel.FK_MultiKey_Order" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

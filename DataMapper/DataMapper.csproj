@@ -55,7 +55,7 @@
     <Compile Include="Building\Validation\DataMapValidation.cs" />
     <Compile Include="Building\Validation\DataMapValidationBuilder.cs" />
     <Compile Include="Building\Validation\DataMapValidationProperty.cs" />
-    <Compile Include="Cache\DataMapCache.cs" />
+    <Compile Include="Caching\DataMapCache.cs" />
     <Compile Include="Convention\IConvention.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Mapping\DataMapperList.cs" />

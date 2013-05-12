@@ -26,10 +26,10 @@ namespace DataMapper.Repositories
         where TAggregate : class,new()
     {
 
-        public TAggregate TryFind(TDbContext context, Key id)
-        {
-            return (TAggregate)this.TryFindAggregate(context, id);
-        }
+        //public TAggregate TryFind(TDbContext context, Key id)
+        //{
+        //    return (TAggregate)this.TryFindAggregate(context, id);
+        //}
         public TAggregate TryFind(Key id)
         {
             return (TAggregate)this.TryFindAggregate(id);

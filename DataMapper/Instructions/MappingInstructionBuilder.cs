@@ -65,7 +65,7 @@ namespace DataMapper.Instructions
                     targetKeyAndObjectList,
                     x => x.Key,
                     x => x.Key,
-                    (x1, x2) => new Tuple<KeyAndObjectPair, KeyAndObjectPair>(x1, x2))
+                    (x1, x2) => new Tuple<KeyAndObjectPair<CompositeKey>, KeyAndObjectPair<CompositeKey>>(x1, x2))
                     .ToList();
 
                 //at this point, we have all the things put together for us
@@ -86,15 +86,31 @@ namespace DataMapper.Instructions
             return dataMapCommand;
         }
 
-        private KeyAndObjectPairList BuildKeyAndObjectPairList(IDataMapperList rawList, DataMap dataMap, Boolean buildForSource)
+        //private KeyAndObjectPairList<String> BuildKeyAndObjectPairList(IDataMapperList rawList, DataMap dataMap, Boolean buildForSource)
+        //{
+        //    KeyAndObjectPairList<String> listy = new KeyAndObjectPairList<String>();
+
+        //    if (rawList != null)
+        //    {
+        //        foreach (var item in rawList)
+        //        {
+        //            listy.Add(new KeyAndObjectPair<String>(
+        //                buildForSource ? dataMap.BuildSourceAggregateKey(item) : dataMap.BuildTargetAggregateKey(item),
+        //                item));
+        //        }
+        //    }
+
+        //    return listy;
+        //}
+        private KeyAndObjectPairList<CompositeKey> BuildKeyAndObjectPairList(IDataMapperList rawList, DataMap dataMap, Boolean buildForSource)
         {
-            KeyAndObjectPairList listy = new KeyAndObjectPairList();
+            KeyAndObjectPairList<CompositeKey> listy = new KeyAndObjectPairList<CompositeKey>();
 
             if (rawList != null)
             {
                 foreach (var item in rawList)
                 {
-                    listy.Add(new KeyAndObjectPair(
+                    listy.Add(new KeyAndObjectPair<CompositeKey>(
                         buildForSource ? dataMap.BuildSourceAggregateKey(item) : dataMap.BuildTargetAggregateKey(item),
                         item));
                 }

@@ -11,10 +11,10 @@ namespace Theoretical.Business
         {
             this.OrderItem = new List<OrderItem>();
             this.OrderInformation = new List<OrderInformation>();
+            this.MultiKey = new List<MultiKey>();
         }
 
         public int OrderId { get; set; }
-        public int AccountId { get; set; }
         public int Status { get; set; }
         public string Number { get; set; }
         public System.DateTime OrderDate { get; set; }
@@ -28,5 +28,6 @@ namespace Theoretical.Business
         //public virtual Account Account { get; set; }
         public virtual ICollection<OrderItem> OrderItem { get; set; }
         public virtual ICollection<OrderInformation> OrderInformation { get; set; }
+        public virtual ICollection<MultiKey> MultiKey { get; set; }
     }
 }

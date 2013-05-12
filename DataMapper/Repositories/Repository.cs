@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DataMapper.Building;
-using DataMapper.Cache;
+using DataMapper.Caching;
 using DataMapper.Instructions;
 using DataMapper.Mapping;
 

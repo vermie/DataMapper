@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection;
 using System.Collections.Concurrent;
 using System.Collections;
+using DataMapper.Instructions;
 
 namespace DataMapper.Mapping
 {
@@ -77,47 +78,76 @@ namespace DataMapper.Mapping
             return true;
         }
 
-        public String BuildSourceAggregateKey(Object source)
+        //public String BuildSourceAggregateKey(Object source)
+        //{
+        //    return this.BuildAggregateKey(source, true);
+        //}
+        //public String BuildTargetAggregateKey(Object target)
+        //{
+        //    return this.BuildAggregateKey(target, false);
+        //}
+        //private String BuildAggregateKey(Object theObject, Boolean useSource)
+        //{
+        //    //not a great implementation...we will start with this though
+
+        //    if (theObject == null)
+        //        throw new DataMapperException("unable to build aggregatekey for object");
+
+        //    String keyAggregate = String.Empty;
+            
+        //    foreach (var item in this.PropertyMapList.Where(a => a.IsKey))
+        //    {
+        //        var propertyInfoToUse = useSource ? item.SourcePropertyInfo : item.TargetPropertyInfo;
+
+        //        var value = propertyInfoToUse.GetValue(theObject, null);
+
+        //        keyAggregate += value.ToString();
+
+        //        ////capture a default value....
+        //        ////if the value of a key is equal to the 'default' value of a 
+        //        //var defaultValue = propertyInfoToUse.PropertyType.GetDefault();
+        //        //var comparer = defaultValue as IComparable;
+        //        //if (comparer.CompareTo(value) == 0)
+        //        //{
+        //        //    //do something that 
+        //        //    keyAggregate += value.ToString();
+        //        //}
+        //        //else
+        //        //{
+        //        //    keyAggregate += value.ToString();
+        //        //}
+        //    }
+
+        //    return keyAggregate;
+        //}
+
+        public CompositeKey BuildSourceAggregateKey(Object source)
         {
             return this.BuildAggregateKey(source, true);
         }
-        public String BuildTargetAggregateKey(Object target)
+        public CompositeKey BuildTargetAggregateKey(Object target)
         {
             return this.BuildAggregateKey(target, false);
         }
-        private String BuildAggregateKey(Object theObject, Boolean useSource)
+        private CompositeKey BuildAggregateKey(Object theObject, Boolean useSource)
         {
             //not a great implementation...we will start with this though
-
             if (theObject == null)
                 throw new DataMapperException("unable to build aggregatekey for object");
 
-            String keyAggregate = String.Empty;
-            
+            CompositeKey key = new CompositeKey();
+
+            //the order matters but it should be preserved, right?
             foreach (var item in this.PropertyMapList.Where(a => a.IsKey))
             {
                 var propertyInfoToUse = useSource ? item.SourcePropertyInfo : item.TargetPropertyInfo;
 
                 var value = propertyInfoToUse.GetValue(theObject, null);
 
-                keyAggregate += value.ToString();
-
-                ////capture a default value....
-                ////if the value of a key is equal to the 'default' value of a 
-                //var defaultValue = propertyInfoToUse.PropertyType.GetDefault();
-                //var comparer = defaultValue as IComparable;
-                //if (comparer.CompareTo(value) == 0)
-                //{
-                //    //do something that 
-                //    keyAggregate += value.ToString();
-                //}
-                //else
-                //{
-                //    keyAggregate += value.ToString();
-                //}
+                key.AddKey(propertyInfoToUse.PropertyType, value);                
             }
 
-            return keyAggregate;
+            return key;
         }
 
         internal List<PropertyMap> GetAllMappedProperties()

@@ -18,10 +18,10 @@ namespace Theoretical.Data
         {
             this.OrderInformation = new HashSet<OrderInformationEntity>();
             this.OrderItem = new HashSet<OrderItemEntity>();
+            this.MultiKey = new HashSet<MultiKeyEntity>();
         }
     
         public int OrderId { get; set; }
-        public int AccountId { get; set; }
         public int Status { get; set; }
         public string Number { get; set; }
         public System.DateTime OrderDate { get; set; }
@@ -32,5 +32,6 @@ namespace Theoretical.Data
     
         public virtual ICollection<OrderInformationEntity> OrderInformation { get; set; }
         public virtual ICollection<OrderItemEntity> OrderItem { get; set; }
+        public virtual ICollection<MultiKeyEntity> MultiKey { get; set; }
     }
 }

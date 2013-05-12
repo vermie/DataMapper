@@ -60,46 +60,51 @@ namespace DataMapper.Repositories
 
         private TEntity TryFindEntity(DbContext context, params Object[] keyValues)
         {
-            //get a handle
-            var entitySet = this.EntityDbSet(context);
-
-            //find from data objects...
-            var entityObject = entitySet.Find(keyValues);
-
             //NOTE: potentially do something with includes?
-            //for now, use this as a variable to track whether we had the includes or not.
-            Boolean entityObjectLoadedWithIncludes = false;
+            //for now, use this as a variable to decide whether or not we 'automagically' load child entities.
+            //later we can make this a convention driven maybe...
+            Boolean autoLoadByWalkingProperties = true;
 
-            //if we get something back but we did not have includes for the kids,
-            //we need to try to manually load the sucker.
-            if ((entityObject != null) && (entityObjectLoadedWithIncludes == false))
+            //store the value of the default lazy loading behavior in the context.
+            var contextDefaultLazyLoadingValue = context.Configuration.LazyLoadingEnabled;
+            var contextProxyCreationEnabled = context.Configuration.ProxyCreationEnabled;
+            Object entityObject = null;
+
+            try
             {
-                //store the value of the default lazy loading behavior in the context.
-                var contextDefaultLazyLoadingValue = context.Configuration.LazyLoadingEnabled;
-
-                //we could deal with this by either:
-                //1.- enabling lazyloading in a try finally block so we can get our job done. I am not sure I like this...
-                //because it is tampering with the context which is not something I like to do. However, I also know this
-                //should be running in a threadsafe way so as long as I can 'undo' it, it should be ok.
-                //2.- just throwing an exception
-
-                // a throw to deal with this
-                //throw new NotImplementedException("Unable to load the entity automatically.");
-                try
+                if (autoLoadByWalkingProperties)
                 {
                     context.Configuration.LazyLoadingEnabled = true;
+                    context.Configuration.ProxyCreationEnabled = true;
+                }
 
+                //get a handle
+                var entitySet = this.EntityDbSet(context);
+
+                //find from data objects...
+                entityObject = entitySet.Find(keyValues);
+
+                //if we get something back but we did not have includes for the kids,
+                //we need to try to manually load the sucker.
+                if ((entityObject != null) && (autoLoadByWalkingProperties == true))
+                {
+                    //we could deal with this by either:
+                    //1.- enabling lazyloading in a try finally block so we can get our job done. I am not sure I like this...
+                    //because it is tampering with the context which is not something I like to do. However, I also know this
+                    //should be running in a single thread way so as long as I can 'undo' it, it should be ok.
+                    //2.- just throwing an exception
+
+                    // a throw to deal with this
+                    //throw new NotImplementedException("Unable to load the entity automatically.");
                     //walk the children to make sure they laziless load they asses.
                     this.LoadChildEntities(context, this.DataMap, entityObject);
                 }
-                finally
-                {
-                    //this is disposal, not 
-
-                    //make sure we undo this no matter what. No molesty!
-                    context.Configuration.LazyLoadingEnabled = contextDefaultLazyLoadingValue;
-                }
-
+            }
+            finally
+            {
+                //make sure we undo this no matter what. No molesty!
+                context.Configuration.LazyLoadingEnabled = contextDefaultLazyLoadingValue;
+                context.Configuration.ProxyCreationEnabled = contextProxyCreationEnabled;
             }
 
             //return the entity object

@@ -15,6 +15,13 @@ namespace Theoretical.Business
         protected override void DefineDataMap(DataMapBuilder<Order, OrderEntity> builder)
         {
             //builder.MapProperty(a => a.OrderItem, b => b.OrderItem);
+            builder
+                .MapProperty(a => a.MultiKey, b => b.MultiKey);
+
+            builder.GetChildMapper<MultiKey, MultiKeyEntity>()
+                .MapProperty(a => a.KeyOne, b => b.KeyOne, MappedPropertyType.KeyField, null)
+                .MapProperty(a => a.KeyTwo, b => b.KeyTwo, MappedPropertyType.KeyField, null)
+                .MapProperty(a => a.KeyThree, b => b.KeyThree, MappedPropertyType.KeyField, null);
 
             builder.MapRemainingByConvention(PropertyMapUnresolvedBehavior.ThrowException);
         }
@@ -27,6 +34,13 @@ namespace Theoretical.Business
 
     public class OrderPocoDataMapBlock : EntityFrameworkCrudRepository<OrderPoco,OrderEntity,TheoreticalEntities, Int32>
     {
+        public OrderPoco FindFirst()
+        {
+            var id = this.Context.DbContext.OrderEntity.First();
+
+            return this.TryFind(id.OrderId);
+        }
+
         protected override void DefineDataMap(DataMapBuilder<OrderPoco, OrderEntity> builder)
         {
             //builder.TryMapRemainingByConvention();
