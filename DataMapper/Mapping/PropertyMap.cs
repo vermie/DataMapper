@@ -58,10 +58,7 @@ namespace DataMapper.Mapping
             this.IsKey = isKey;
             this.IsCollection = isCollection;
 
-
-            //select the best conversion strategy based on the types that have been passed in
-            this.TypeConverter = ConverterStrategySelector.Instance.SelectStrategy(
-                this.TargetPropertyInfo.PropertyType, this.SourcePropertyInfo.PropertyType);
+            this.TypeConverter = NullConverter.Instance;
         }
 
         public void Copy(Object source, Object target, MappingDirection mappingDirection)

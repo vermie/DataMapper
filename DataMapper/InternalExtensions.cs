@@ -105,7 +105,26 @@ namespace DataMapper
                     throw new System.ComponentModel.InvalidEnumArgumentException();
             }
         }
+        public static Boolean IsEnumMappingMatch(this PropertyInfo source, PropertyInfo target)
+        {
+            return IsEnumMappingMatch(source.PropertyType, target.PropertyType);
+        }
+        public static Boolean IsEnumMappingMatch(this Type firstType, Type secondType)
+        {
+            //only one can be an enum. this is good. We do not want to match when both are enums unless they ARE 
+            //the SAME enum type
+            return firstType.IsEnumTypeAndUnderlyingTypesMatch(secondType) ||
+                secondType.IsEnumTypeAndUnderlyingTypesMatch(firstType);
+        }
+        internal static Boolean IsEnumTypeAndUnderlyingTypesMatch(this Type enumType, Type targetType)
+        {
+            if (enumType.IsEnum)
+            {
+                return Enum.GetUnderlyingType(enumType) == targetType;
+            }
 
+            return false;
+        }
 
         //public static IEnumerable<PropertyInfo> GetMappingProperties(this Type type)
         //{
@@ -143,11 +162,11 @@ namespace DataMapper
             if (type.IsArray)
             {
                 var elementType = type.GetElementType();
-                return (elementType.IsValueType ||
+                return (elementType.IsValueType || 
                         elementType == typeof(String));
             }
             return
-                (type.IsValueType) ||
+                (type.IsValueType) || 
                 (type == typeof(String));
         }
         public static Boolean IsPropertyTypeCollectionType(this PropertyInfo propertyInfo)

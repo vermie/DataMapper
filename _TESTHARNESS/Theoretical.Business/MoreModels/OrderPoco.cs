@@ -14,7 +14,7 @@ namespace Theoretical.Business
 
         public int MyId { get; set; }
         public int AccountId { get; set; }
-        public StatusEnum RenamedStatus { get; set; }
+        public StatusEnum Status { get; set; }
         public string Number { get; set; }
         public System.DateTime OrderDate { get; set; }
         public Decimal TaxRate { get; set; }

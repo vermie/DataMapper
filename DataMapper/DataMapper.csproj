@@ -75,7 +75,6 @@
     <Compile Include="Mapping\DataMapCollectionList.cs" />
     <Compile Include="Instructions\MappingInstruction.cs" />
     <Compile Include="Instructions\MappingInstructionBuilder.cs" />
-    <Compile Include="Instructions\MappingInstructionChangeDirection.cs" />
     <Compile Include="Instructions\MappingInstructionList.cs" />
     <Compile Include="Instructions\MappingInstructionResult.cs" />
     <Compile Include="Instructions\Item.cs" />

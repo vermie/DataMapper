@@ -27,6 +27,11 @@ namespace DataMapper.Building
         #endregion
 
         #region Properties
+        public Conventions Conventions
+        {
+            get;
+            set;
+        }
         public DataMapValidationOptions ValidationOptions
         {
             get;
@@ -130,20 +135,9 @@ namespace DataMapper.Building
 
         #region Constructors
         public DataMapBuilderCore(Type sourceType, Type targetType)
+            : this(new DataMap() { Parent = null, SourceType = sourceType, TargetType = targetType }, new DataMapBuilderState())
         {
-            this._dataMap = new DataMap()
-            {
-                SourceType = sourceType,
-                TargetType = targetType,
-                Parent = null
-            };
-            this._state = new DataMapBuilderState();
-
-            //get all the possible mapping properties
-            _sourcePropertyInfoHashSet.AddRange(this.SourceType.GetMappingProperties());
-            _targetPropertyInfoHashSet.AddRange(this.TargetType.GetMappingProperties());
-
-            this.ValidationOptions = DataMapValidationOptions.Default;
+            //cleaned this up
         }
         internal DataMapBuilderCore(DataMap dataMap, DataMapBuilderState state)
         {
@@ -154,6 +148,7 @@ namespace DataMapper.Building
             _targetPropertyInfoHashSet.AddRange(this.TargetType.GetMappingProperties());
 
             this.ValidationOptions = DataMapValidationOptions.Default;
+            this.Conventions = new Conventions();
         }
         internal DataMapBuilderCore(DataMapBuilderCore copy)
         {
@@ -429,50 +424,91 @@ namespace DataMapper.Building
         //}
         private DataMapBuilderCore MapPropertyByConvention(PropertyInfo sourcePropertyInfo,Boolean throwIfUnableToMap)
         {
-            PropertyInfo targetPropertyInfo = null;
-
             if (sourcePropertyInfo == null)
             {
                 throw new ArgumentNullException("sourcePropertyInfo");
             }
 
-            //match by name and type for integrals, match by name only for collections.
-            if (sourcePropertyInfo.IsPropertyTypeIntegralType())
-            {
-                targetPropertyInfo = this._targetPropertyInfoHashSet.Where(a => a.IsMappingMatch(
-                    sourcePropertyInfo, MappingMatchOption.MatchByPropertyNameAndPropertyType)).FirstOrDefault();
-            }
-            else if (sourcePropertyInfo.IsPropertyTypeCollectionType())
-            {//match for the collection type
-                targetPropertyInfo = this._targetPropertyInfoHashSet.Where(a => a.IsMappingMatch(
-                    sourcePropertyInfo, MappingMatchOption.MatchByPropertyName)).FirstOrDefault();
-            }
-            else
-            {
-                //If this is not an integral type or collection type, we will add it to the ignore list by convention.
-                //allow these conventions to be changed later on? possibly
-                return this.IgnoreProperty(sourcePropertyInfo);
+            //try to map it
+            var wasMapped = 
+                this.MapPropertyByConventionIntegral(sourcePropertyInfo) ||
+                this.MapPropertyByConventionEnum(sourcePropertyInfo) ||
+                this.MapPropertyByConventionCollection(sourcePropertyInfo);
 
-                //throw new DataMapperException("Unable to map property by convention the type is not a collection type or an integral type (value type + string).");
-            }
-
-
-            if (targetPropertyInfo == null)
+            if (throwIfUnableToMap && (wasMapped == false))
             {
-                if (throwIfUnableToMap)
-                {
-                    throw new DataMapperException(
+                throw new DataMapperException(
                         "Unable to find matching property for property '{0}' on type '{1}'. Please map this property manually, or make sure it can be mapped by the selected conventions."
                         .FormatString(sourcePropertyInfo.Name, sourcePropertyInfo.DeclaringType.FullName));
-                }
+            }
 
-                return this;
-            }
-            else
+            return this;
+        }
+
+        private Boolean MapPropertyByConventionIntegral(PropertyInfo sourcePropertyInfo)
+        {
+            if (sourcePropertyInfo.IsPropertyTypeIntegralType())
             {
-                return this.MapProperty(sourcePropertyInfo, targetPropertyInfo,
-                    this.IsKeyByNamingConvention(sourcePropertyInfo) || this.IsKeyByNamingConvention(targetPropertyInfo) ? MappedPropertyType.KeyField : MappedPropertyType.Field, null);
+                //check for the simple case...
+                var targetPropertyInfo = this._targetPropertyInfoHashSet.Where(a => a.IsMappingMatch(
+                    sourcePropertyInfo, MappingMatchOption.MatchByPropertyNameAndPropertyType)).FirstOrDefault();
+
+                //if we failed to find it try by enum
+                if (targetPropertyInfo != null)
+                {
+                    this.MapProperty(sourcePropertyInfo, targetPropertyInfo,
+                        this.IsKeyByNamingConvention(sourcePropertyInfo) || this.IsKeyByNamingConvention(targetPropertyInfo)
+                        ? MappedPropertyType.KeyField : MappedPropertyType.Field, null);
+
+                    return true;
+                }
             }
+
+            return false;
+        }
+        private Boolean MapPropertyByConventionEnum(PropertyInfo sourcePropertyInfo)
+        {
+            if ((sourcePropertyInfo.PropertyType.IsIntegralType()) && (this.Conventions.IsDefined<AutomaticEnumMappingConvention>()))
+            {
+                var targetCandidate = this._targetPropertyInfoHashSet.Where(a => a.IsMappingMatch(
+                    sourcePropertyInfo, MappingMatchOption.MatchByPropertyName)).FirstOrDefault();
+
+                if ((targetCandidate != null) && (targetCandidate.IsEnumMappingMatch(sourcePropertyInfo)))
+                {
+                    var targetPropertyInfo = targetCandidate;
+
+                    var typeConverterToUse = new EnumConverterGenericImplementation(
+                        targetPropertyInfo.PropertyType.IsEnum ? targetPropertyInfo.PropertyType : sourcePropertyInfo.PropertyType);
+
+                    //i suppose an enum could be a key field. Why the hell not?
+                    this.MapProperty(sourcePropertyInfo, targetPropertyInfo,
+                        this.IsKeyByNamingConvention(sourcePropertyInfo) || this.IsKeyByNamingConvention(targetPropertyInfo)
+                        ? MappedPropertyType.KeyField : MappedPropertyType.Field, typeConverterToUse);
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        private Boolean MapPropertyByConventionCollection(PropertyInfo sourcePropertyInfo)
+        {
+            if (sourcePropertyInfo.IsPropertyTypeCollectionType())
+            {
+                //match for the collection type
+                var targetPropertyInfo = this._targetPropertyInfoHashSet.Where(a => a.IsMappingMatch(
+                    sourcePropertyInfo, MappingMatchOption.MatchByPropertyName)).FirstOrDefault();
+
+                if (targetPropertyInfo == null)
+                {
+                    //collection maps cannot be keys
+                    this.MapProperty(sourcePropertyInfo, targetPropertyInfo, MappedPropertyType.Field, null);
+
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         #endregion

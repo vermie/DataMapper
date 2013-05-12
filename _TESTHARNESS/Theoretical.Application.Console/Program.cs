@@ -10,6 +10,7 @@ using System.Diagnostics;
 using Moq;
 using DataMapper.Building;
 using Theoretical.Data;
+using DataMapper.Repositories;
 
 namespace Theoretical.Application
 {
@@ -24,10 +25,10 @@ namespace Theoretical.Application
                 //DataMapBlock();
 
                 //the thingie
-                SimpleThingy();
+                //SimpleThingy();
 
                 //this shows how you can rename things
-                //DataMapBlockOdd();
+                DataMapBlockOdd();
 
                 //TypeMapper();
 
@@ -170,6 +171,8 @@ namespace Theoretical.Application
             try
             {
                 OrderPocoDataMapBlock dataMapBlock = new OrderPocoDataMapBlock();
+                EntityFrameworkRepositoryContext<TheoreticalEntities> context = new EntityFrameworkRepositoryContext<TheoreticalEntities>();
+                dataMapBlock.Context = context;
 
                 //just to simplify stuff, you can ignore these two lines
                 var sl = new LastRevisionServiceLayer();
@@ -179,10 +182,11 @@ namespace Theoretical.Application
 
                 var addOrder = CreateNewOrderPoco();
 
-                addOrder.RenamedStatus = StatusEnum.Giggidy;
+                addOrder.Status = StatusEnum.Giggidy;
 
                 //sl.Add(addOrder);
                 dataMapBlock.Add(addOrder);
+                context.SaveChanges();
 
                 var addFindResult = dataMapBlock.TryFind(addOrder.MyId);
 
@@ -198,12 +202,15 @@ namespace Theoretical.Application
                 });
 
                 dataMapBlock.Update(addFindResult);
+                context.SaveChanges();
 
                 addFindResult.OrderInformation.Last().TrackingNumber = "Giggidy";
 
                 dataMapBlock.Update(addFindResult);
+                context.SaveChanges();
 
-                //dataMapBlock.Delete(addFindResult);
+                dataMapBlock.Delete(addFindResult);
+                context.SaveChanges();
             }
             catch (Exception ex)
             {
@@ -282,7 +289,7 @@ namespace Theoretical.Application
                 Number = "4000" + Guid.NewGuid().ToString(),
                 OrderDate = DateTime.Now,
                 AccountId = 1,
-                RenamedStatus =  StatusEnum.Giggidy,
+                Status =  StatusEnum.Giggidy,
                 TaxRate = (34.23m),
                 ConcurrencyId = 0,
                 OptionalNote = null,
@@ -382,7 +389,7 @@ namespace Theoretical.Application
 
                 tms.Define<OrderEntity, OrderPoco>()
                     .MapProperty(a=>a.OrderId,b=>b.MyId)
-                    .MapProperty(a=>a.Status,b=>b.RenamedStatus);
+                    .MapProperty(a=>a.Status,b=>b.Status);
                     //.MapRemainingByConvention(PropertyMapUnresolvedBehavior.None);
 
                 tms.Define<LocalDataStoreSlot, Object>();

@@ -25,7 +25,7 @@ namespace Theoretical.Business
             builder
                 .MapProperty(a => a.MyId, b => b.OrderId, MappedPropertyType.KeyField)
                 .MapProperty(a => a.TaxRate, b => b.TaxRate, MappedPropertyType.Field)
-                .MapProperty(a => a.RenamedStatus, b => b.Status, MappedPropertyType.Field, new EnumConverter<StatusEnum>())
+                //.MapProperty(a => a.Status, b => b.Status, MappedPropertyType.Field, new EnumConverter<StatusEnum,Int32>())
                 .MapProperty(a => a.MyOrderPocoItems, b => b.OrderItem)
                 .MapProperty(a => a.OrderInformation, b => b.OrderInformation);
 

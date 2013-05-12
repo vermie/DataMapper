@@ -15,8 +15,8 @@ namespace Theoretical.Business
     {
         protected override void DefineDataMap(DataMapBuilder<OrderEntity, OrderEntity> builder)
         {
-            builder.MapRemainingByConvention(PropertyMapUnresolvedBehavior.ThrowException);
-            return;
+            //builder.MapRemainingByConvention(PropertyMapUnresolvedBehavior.ThrowException);
+            //return;
 
             //map the odd men out...
             builder
