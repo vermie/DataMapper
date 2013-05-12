@@ -12,7 +12,17 @@ namespace Theoretical.Business
 {
     public class OrderDataMapBlock : EntityFrameworkCrudRepository<Order, OrderEntity, TheoreticalEntities, Int32>
     {
+        protected override void DefineDataMap(DataMapBuilder<Order, OrderEntity> builder)
+        {
+            //builder.MapProperty(a => a.OrderItem, b => b.OrderItem);
 
+            builder.MapRemainingByConvention(PropertyMapUnresolvedBehavior.ThrowException);
+        }
+
+        public void TouchDataMap()
+        {
+            var yo = this.DataMap;
+        }
     }
 
     public class OrderPocoDataMapBlock : EntityFrameworkCrudRepository<OrderPoco,OrderEntity,TheoreticalEntities, Int32>

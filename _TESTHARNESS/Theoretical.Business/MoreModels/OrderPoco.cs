@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Theoretical.Business
 {
     [Serializable()]
-    public class OrderPoco:AggregateRootBase
+    public class OrderPoco
     {
         public OrderPoco()
         {

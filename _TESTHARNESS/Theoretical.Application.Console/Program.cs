@@ -21,6 +21,13 @@ namespace Theoretical.Application
         {
             try
             {
+                TheoreticalEntities context = new TheoreticalEntities();
+                context.OrderEntity.RemoveAll(context.OrderEntity.ToArray());
+                context.SaveChanges();
+
+                CachePerformanceTest(false);
+                CachePerformanceTest(true);
+
                 //this uses straight up mapping
                 //DataMapBlock();
 
@@ -28,7 +35,7 @@ namespace Theoretical.Application
                 //SimpleThingy();
 
                 //this shows how you can rename things
-                DataMapBlockOdd();
+                //DataMapBlockOdd();
 
                 //TypeMapper();
 
@@ -39,6 +46,9 @@ namespace Theoretical.Application
                 //expect this...
                 Console.WriteLine(ex.ToString());
             }
+
+            Console.WriteLine("Press any key to exit");
+            Console.ReadKey();
         }
 
         static void DataMapBlock()
@@ -54,10 +64,6 @@ namespace Theoretical.Application
                 //efContext.Configuration.ValidateOnSaveEnabled = false;
                 var context = new DataMapper.Repositories.EntityFrameworkRepositoryContext<TheoreticalEntities>(efContext);
                 dataMapBlock.Context = context;
-
-                //just to simplify stuff, you can ignore these two lines
-                var sl = new LastRevisionServiceLayer();
-                sl.DeleteAll();
 
                 var findResult = dataMapBlock.TryFind(134);
 
@@ -166,6 +172,25 @@ namespace Theoretical.Application
             return newOrder;
         }
 
+        static void CachePerformanceTest(Boolean cachingEnabled)
+        {
+            DateTime started = DateTime.Now;
+            Int32 loopymax = 100000;
+            EntityFrameworkRepositoryContext<TheoreticalEntities> context 
+                = new EntityFrameworkRepositoryContext<TheoreticalEntities>();
+            OrderDataMapBlock blocky;
+
+            for (Int32 i = 0; i < loopymax; i++)
+            {
+                blocky = new OrderDataMapBlock();
+                //blocky.Context = context;
+                blocky.CachingEnabled = cachingEnabled;
+
+                blocky.TouchDataMap();
+            }
+            var stringy = cachingEnabled ? "(Caching)" : "(No caching)";
+            Console.WriteLine( "Time to complete" + stringy + ": " + DateTime.Now.Subtract(started).TotalSeconds.ToString());
+        }
         static void DataMapBlockOdd()
         {
             try
@@ -174,9 +199,6 @@ namespace Theoretical.Application
                 EntityFrameworkRepositoryContext<TheoreticalEntities> context = new EntityFrameworkRepositoryContext<TheoreticalEntities>();
                 dataMapBlock.Context = context;
 
-                //just to simplify stuff, you can ignore these two lines
-                var sl = new LastRevisionServiceLayer();
-                sl.DeleteAll();
 
                 var findResult = dataMapBlock.TryFind(134);
 
@@ -217,69 +239,56 @@ namespace Theoretical.Application
                 Console.Write(ex.ToString());
             }
 
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
+
         }
 
         static void SimpleThingy()
         {
-            try
+
+            SimpleRepoThingy repo = new SimpleRepoThingy();
+
+            //set the juicy context...
+            var efContext = new TheoreticalEntities();
+            efContext.Configuration.LazyLoadingEnabled = false;
+            efContext.Configuration.ProxyCreationEnabled = false;
+            //efContext.Configuration.ValidateOnSaveEnabled = false;
+            var context = new DataMapper.Repositories.EntityFrameworkRepositoryContext<TheoreticalEntities>(efContext);
+            repo.Context = context;
+
+            var findResult = repo.TryFind(134);
+
+            var addOrder = CreateNewOrderEntity();
+
+            //addOrder.RenamedStatus = StatusEnum.Giggidy;
+
+            //sl.Add(addOrder);
+            repo.Add(addOrder);
+            context.SaveChanges();
+
+            var addFindResult = repo.TryFind(addOrder.OrderId);
+
+            //remove last and add a new one. 
+            addFindResult.OrderItem.Remove(addFindResult.OrderItem.Last());
+            addFindResult.OrderItem.Add(new OrderItemEntity()
             {
-                SimpleRepoThingy repo = new SimpleRepoThingy();
+                HasSerialNumber = false,
+                SalePrice = 1000M,
+                SerialNumber = "ADDEDITEM",
+                Upc = "ADDUPC",
+                ConcurrencyId = 0
+            });
 
-                //set the juicy context...
-                var efContext = new TheoreticalEntities();
-                efContext.Configuration.LazyLoadingEnabled = false;
-                efContext.Configuration.ProxyCreationEnabled = false;
-                //efContext.Configuration.ValidateOnSaveEnabled = false;
-                var context = new DataMapper.Repositories.EntityFrameworkRepositoryContext<TheoreticalEntities>(efContext);
-                repo.Context = context;
+            repo.Update(addFindResult);
+            context.SaveChanges();
 
-                //just to simplify stuff, you can ignore these two lines
-                var sl = new LastRevisionServiceLayer();
-                sl.DeleteAll();
+            addFindResult.OrderInformation.Last().TrackingNumber = "Giggidy";
 
-                var findResult = repo.TryFind(134);
+            repo.Update(addFindResult);
+            context.SaveChanges();
 
-                var addOrder = CreateNewOrderEntity();
+            repo.Delete(addFindResult);
+            context.SaveChanges();
 
-                //addOrder.RenamedStatus = StatusEnum.Giggidy;
-
-                //sl.Add(addOrder);
-                repo.Add(addOrder);
-                context.SaveChanges();
-
-                var addFindResult = repo.TryFind(addOrder.OrderId);
-
-                //remove last and add a new one. 
-                addFindResult.OrderItem.Remove(addFindResult.OrderItem.Last());
-                addFindResult.OrderItem.Add(new OrderItemEntity()
-                {
-                    HasSerialNumber = false,
-                    SalePrice = 1000M,
-                    SerialNumber = "ADDEDITEM",
-                    Upc = "ADDUPC",
-                    ConcurrencyId = 0
-                });
-
-                repo.Update(addFindResult);
-                context.SaveChanges();
-
-                addFindResult.OrderInformation.Last().TrackingNumber = "Giggidy";
-
-                repo.Update(addFindResult);
-                context.SaveChanges();
-
-                repo.Delete(addFindResult);
-                context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex.ToString());
-            }
-
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
         }
 
         static OrderPoco CreateNewOrderPoco()
@@ -289,7 +298,7 @@ namespace Theoretical.Application
                 Number = "4000" + Guid.NewGuid().ToString(),
                 OrderDate = DateTime.Now,
                 AccountId = 1,
-                Status =  StatusEnum.Giggidy,
+                Status = StatusEnum.Giggidy,
                 TaxRate = (34.23m),
                 ConcurrencyId = 0,
                 OptionalNote = null,
@@ -381,284 +390,27 @@ namespace Theoretical.Application
 
         static void TypeMapper()
         {
-            try
-            {
-                var orderEntity = new OrderEntity();
-                var addOrder = CreateNewOrderPoco();
-                TypeMapStore tms = new TypeMapStore();
+            var orderEntity = new OrderEntity();
+            var addOrder = CreateNewOrderPoco();
+            TypeMapStore tms = new TypeMapStore();
 
-                tms.Define<OrderEntity, OrderPoco>()
-                    .MapProperty(a=>a.OrderId,b=>b.MyId)
-                    .MapProperty(a=>a.Status,b=>b.Status);
-                    //.MapRemainingByConvention(PropertyMapUnresolvedBehavior.None);
+            tms.Define<OrderEntity, OrderPoco>()
+                .MapProperty(a => a.OrderId, b => b.MyId)
+                .MapProperty(a => a.Status, b => b.Status);
+            //.MapRemainingByConvention(PropertyMapUnresolvedBehavior.None);
 
-                tms.Define<LocalDataStoreSlot, Object>();
+            tms.Define<LocalDataStoreSlot, Object>();
 
-                tms.Define<TimeZone, Object>();
+            tms.Define<TimeZone, Object>();
 
-                tms.Finish();
+            tms.Finish();
 
-                tms.Map<OrderPoco, OrderEntity>(addOrder, orderEntity);
+            tms.Map<OrderPoco, OrderEntity>(addOrder, orderEntity);
 
-                var yo = 34;
-                //dataMapBlock.Delete(addFindResult);
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex.ToString());
-            }
-
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
-        }
-
-        #region Ignore
-        static void LastRevision()
-        {
-            try
-            {
-                LastRevisionServiceLayer sl = new LastRevisionServiceLayer();
-
-                sl.DeleteAll();
-
-                var findResult = sl.TryFind(134);
-
-                var addOrder = CreateNewOrder();
-                sl.Add(addOrder);
-                var addFindResult = sl.TryFind(addOrder.OrderId);
-
-                //remove last and add a new one. 
-                addFindResult.OrderItem.Remove(addFindResult.OrderItem.Last());
-                addFindResult.OrderItem.Add(new OrderItem()
-                {
-                    HasSerialNumber = false,
-                    SalePrice = 1000M,
-                    SerialNumber = "ADDEDITEM",
-                    Upc = "ADDUPC",
-                    ConcurrencyId = 0
-                });
-
-                sl.Update(addFindResult);
-
-                sl.Delete(addFindResult);
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex.ToString());
-            }
-
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
-        }
-
-        static void LessNaive()
-        {
-            try
-            {
-                LessNaiveServiceLayer sl = new LessNaiveServiceLayer();
-
-                sl.DeleteAll();
-
-                var findResult = sl.TryFind(134);
-
-                var addOrder = CreateNewOrder();
-                sl.Add(addOrder);
-                var addFindResult = sl.TryFind(addOrder.OrderId);
-
-                //remove last and add a new one. 
-                //addFindResult.OrderItem.Remove(addFindResult.OrderItem.Last());
-                addFindResult.OrderItem.Add(new OrderItem()
-                {
-                    HasSerialNumber = false,
-                    SalePrice = 1000M,
-                    SerialNumber = "ADDEDITEM",
-                    Upc = "ADDUPC",
-                    ConcurrencyId = 0
-                });
-
-                sl.Update(addFindResult);
-
-                sl.Delete(addFindResult);
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex.ToString());
-            }
-
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
-        }
-
-        static void Naive()
-        {
-            try
-            {
-                NaiveServiceLayer sl = new NaiveServiceLayer();
-
-                //simple add test
-                var newOrder = CreateNewOrder();
-                sl.Add(newOrder);
-                Console.WriteLine(
-                    String.Format("Saved new order to database {0}",
-                    newOrder.OrderId));
-
-                //do a simple read test
-                var newOrderReadFromDatabase = sl.TryFind(newOrder.OrderId);
-
-                //test the delete case with the dumb delete method.
-                var orderForDelete = CreateNewOrder();
-                orderForDelete.Number = "orderForDelete" + Guid.NewGuid().ToString();
-                sl.Add(orderForDelete);
-                orderForDelete = sl.TryFind(orderForDelete.OrderId);
-                sl.Delete(orderForDelete);
-                Console.WriteLine(
-                    String.Format("Deleted order from database {0}",
-                    orderForDelete.OrderId));
-                var orderForDeleteReadFromDatabase = sl.TryFind(orderForDelete.OrderId);
-
-                var orderForDeleteBreak = CreateNewOrder();
-                orderForDeleteBreak.Number = "orderForDeleteBreak" + Guid.NewGuid().ToString();
-                sl.Add(orderForDeleteBreak);
-
-                var bytestream = DataMapper.EntityFrameworkExtensions.SerializeBinaryToByteStream(orderForDeleteBreak);
-                orderForDeleteBreak = DataMapper.EntityFrameworkExtensions.DeserializeBinaryByteStream<Order>(bytestream);
-                //orderForDeleteBreak.OrderItem.Remove(orderForDeleteBreak.OrderItem.First());
-                orderForDeleteBreak.OrderItem.Clear();
-                try
-                {
-                    sl.Delete(orderForDeleteBreak);
-                }
-                catch (Exception ex)
-                {
-                    //expect this...
-                    Console.WriteLine("Ran into error?");
-                }
-
-
-
-                //var loadResult = f.Ordering.TryFind(newOrder.OrderId);
-
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex.ToString());
-            }
-
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
-        }
-
-        static void NonNaive()
-        {
-            try
-            {
-                Console.WriteLine("Press any key to begin...");
-                //Console.ReadKey();
-
-                var newOrder = CreateNewOrder();
-                //var newOrderCopy = newOrder.PrimitiveCopy();
-
-                //var schemaBuilder = new DataMapSchemaBuilder();
-                //var schemaMap = schemaBuilder.Build(typeof(Order), typeof(OrderEntity), "Entity");
-
-                //var entityCopy = schemaMap.MapToNewCopy(schemaMap, newOrder, DataMapSchema.MapDirection.FirstToSecond);
-
-                //var myCopy3 = (Order)schemaMap.DeepCopyFirst(schemaMap, newOrder);
-
-                //myCopy3.OrderItem.First().SalePrice = 1222M;
-                //myCopy3.Status = 4343;
-
-                //var myCopy = schemaMap.DeepCopyFirst(schemaMap, newOrder);
-
-
-                //Facade f = new Facade();
-
-                //f.Ordering.AddNew(newOrder);
-
-                //var loadResult = f.Ordering.TryFind(newOrder.OrderId);
-
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex.ToString());
-            }
-
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
-        }
-
-        static void FluentBuilder()
-        {
-            var builder = new DataMapBuilder<OrderEntity, Order>();
-
-
-            //builder.MapProperty(a => a.OrderDate, b => b.OrderDate);
-            //builder.MapSourcePropertiesByConvention();
-            //builder.GetChildMapper<OrderItemEntity, OrderItem>()
-            //    .MapSourcePropertiesByConvention();
-            //builder.GetChildMapper<OrderInformationEntity, OrderInformation>()
-            //    .MapSourcePropertiesByConvention();
-
-            var yo = 45;
-        }
-        #endregion
-
-
-        static void TestTwo()
-        {
-            try
-            {
-                using (var trans = new System.Transactions.TransactionScope())
-{
-                using (var context = new TheoreticalEntities())
-                {
-
-                    
-                    var prod = new Product();
-                    prod.Category = "Me";
-                    prod.ConcurrencyId = 0;
-                    prod.Description = "Me";
-                    prod.IsDiscontinued = false;
-                    prod.ProductId = 5;
-                    prod.IsSerialNumberRequired = false;
-                    prod.SalePrice = 5M;
-                    prod.VendorName = "vendor";
-                    context.Products.Add(prod);
-                    context.SaveChanges();
-                    
-                  
-                   
-                }
-
-                using (var context2 = new TheoreticalEntities1())
-                {
-                    var account = new Account();
-                    account.AccountId = 5;
-                    account.ConcurrencyId = 0;
-                    account.Name = "bob";
-                    account.Number = "1234";
-                    context2.Accounts.Add(account);
-                    context2.SaveChanges();
-                }
-
-
-                trans.Complete();
-}
-            }
-            catch (Exception ex)
-            {
-                Console.Write(ex.ToString());
-            }
-
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
+            var yo = 34;
+            //dataMapBlock.Delete(addFindResult);
         }
     }
-
-
-    
-
-    
 
 
 

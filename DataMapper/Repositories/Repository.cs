@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DataMapper.Building;
+using DataMapper.Cache;
 using DataMapper.Instructions;
 using DataMapper.Mapping;
 
@@ -14,6 +15,7 @@ namespace DataMapper.Repositories
         where TAggregateEncapsulated: new()//target
     {
         private DataMap _dataMap=null;
+        private String _dataMapCacheKey;
 
         protected DataMap DataMap
         {
@@ -21,7 +23,18 @@ namespace DataMapper.Repositories
             {
                 if(this._dataMap == null)
                 {
-                    this._dataMap = this.BuildDataMap();
+                    //grab the cached buddy if we have it enabled
+                    if (this.CachingEnabled)
+                    {
+                        this._dataMap = DataMapCache.Instance.TryFind(this._dataMapCacheKey);
+                    }
+
+                    if (this._dataMap == null)
+                    {
+                        this._dataMap = this.BuildDataMap();
+
+                        DataMapCache.Instance.AddItem(this._dataMapCacheKey, this._dataMap);
+                    }
                 }
 
                 return this._dataMap;
@@ -40,7 +53,21 @@ namespace DataMapper.Repositories
             builder.MapRemainingByConvention(PropertyMapUnresolvedBehavior.ThrowException);
         }
 
+        public Boolean CachingEnabled
+        {
+            get;
+            set;
+        }
+
         #endregion
+
+        protected Repository()
+        {
+            //set the cache key. A cheap and good way of implementing this is assuming that 
+            //the type itself will represent a unique 'Datamap' cache object
+            this._dataMapCacheKey = this.GetType().AssemblyQualifiedName;
+            this.CachingEnabled = true;
+        }
 
 
         //set some crap up (like a context or something)

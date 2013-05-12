@@ -3,15 +3,6 @@ using System.Collections.Generic;
 
 namespace Theoretical.Business
 {
-    [Serializable()]
-    public abstract class AggregateRootBase:IMemento
-    {
-        object IMemento.State
-        {
-            get;
-            set;
-        }
-    }
 
     [Serializable()]
     public class Order

@@ -51,19 +51,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IgnoreThis\IMemento.cs" />
-    <Compile Include="IgnoreThis\LastRevisionServiceLayer.cs" />
-    <Compile Include="IgnoreThis\LessNaiveServiceLayer.cs" />
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\OrderInformation.cs" />
     <Compile Include="Models\OrderItem.cs" />
     <Compile Include="MoreModels\OrderInformationPoco.cs" />
     <Compile Include="MoreModels\OrderPoco.cs" />
     <Compile Include="MoreModels\OrderItemPoco.cs" />
-    <Compile Include="IgnoreThis\NaiveServiceLayer.cs" />
     <Compile Include="OrderDataMapBlock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="IgnoreThis\ScratchPad.cs" />
     <Compile Include="IgnoreThis\Vermie.cs" />
     <Compile Include="SimpleRepoThingy.cs" />
   </ItemGroup>

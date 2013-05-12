@@ -499,7 +499,7 @@ namespace DataMapper.Building
                 var targetPropertyInfo = this._targetPropertyInfoHashSet.Where(a => a.IsMappingMatch(
                     sourcePropertyInfo, MappingMatchOption.MatchByPropertyName)).FirstOrDefault();
 
-                if (targetPropertyInfo == null)
+                if (targetPropertyInfo != null)
                 {
                     //collection maps cannot be keys
                     this.MapProperty(sourcePropertyInfo, targetPropertyInfo, MappedPropertyType.Field, null);
